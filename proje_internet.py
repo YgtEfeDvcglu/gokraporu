@@ -326,8 +326,8 @@ st.markdown("---")
 
 with st.expander("Geliştirici Vizyonu 🚀", expanded=True):
     st.markdown(
-        "Ankara Üniversitesi Astronomi ve Uzay Bilimleri bölümünde öğrenim görüyor; teorik astronominin "
-        "pek çok noktasıyla ilgiliyim. Python kullanarak geliştirdiğim "
+        "Ankara Üniversitesi Astronomi ve Uzay Bilimleri bölümünde öğrenim görmekte ve teorik astronominin "
+        "pek çok noktasıyla ilgilenmekteyim. Python kullanarak geliştirdiğim "
         "matematiksel modellemeleri ve bilimsel veri analizi araçlarını, herkesin erişebileceği dinamik "
         "uygulamalara dönüştürmeyi hedefliyorum.\n\n"
         "Başlangıçta yörünge parametrelerinin sayısal analizi ve "
