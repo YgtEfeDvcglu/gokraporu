@@ -130,7 +130,7 @@ def pdf_olustur(a, e, P, tau, cisim_ismi):
 
         yp -= pt2y(13) + pt2y(7); cizgi(yp, renk='#dddddd'); yp -= pt2y(5)
 
-        yaz(0.0, yp, "1.  PROJE ÖZETİ", fs=9.5, bold=True, renk=C_ALT); yp -= pt2y(9.5) + pt2y(4)
+        yaz(0.0, yp, "1.  RAPOR ÖZETİ", fs=9.5, bold=True, renk=C_ALT); yp -= pt2y(9.5) + pt2y(4)
         ozet = (f"{cisim_ismi} eliptik yörünge parametreleri (a = {a:.4f} AB, e = {e:.4f}, "
                 f"P = {P:.2f} gün, τ = {jd_to_date(tau)}) girilerek Kepler denklemi sayısal olarak "
                 f"çözülmüş; heliosentrik uzaklık (r) ve gerçek anomali (ν) hesaplanmıştır.")
