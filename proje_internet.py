@@ -278,8 +278,8 @@ if st.session_state.secim == "jpl":
                             file_name=f"{cisim_adi.replace(' ', '_')}_Raporu.pdf",
                             mime="application/pdf"
                         )
-          except Exception as ex:
-                    st.error(f"Sunucularında hata oluştu veya cisim bulunamadı. Lütfen manuel girişi deneyin. Hata detayı: {ex}")
+except Exception as ex:
+        st.error(f"Sunucularında hata oluştu veya cisim bulunamadı. Lütfen manuel girişi deneyin. Hata detayı: {ex}")
 
 elif st.session_state.secim == "manuel":
     if st.button("← Geri Dön / Yöntem Değiştir"):
