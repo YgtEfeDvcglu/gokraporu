@@ -369,7 +369,10 @@ if st.session_state.secim == "jpl":
                         a_val = float(el['a'][0])
                         e_val = float(el['e'][0])
                         tau_val = float(el['Tp_jd'][0])
-                        P_val = (a_val**1.5) * 365.256
+                        try:
+                            P_val = float(el['P'][0])
+                        except:
+                            P_val = (a_val**1.5) * 365.256
                         i_val = float(el['incl'][0])
                         W_val = float(el['Omega'][0])
                         w_val = float(el['w'][0])
