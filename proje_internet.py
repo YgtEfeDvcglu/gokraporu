@@ -375,7 +375,7 @@ elif st.session_state.secim == "manuel":
                 st.warning("⚠️ 3D simülasyon oluşturabilmek için i, Ω ve ω değerlerinin üçü de girilmelidir veya üçü de boş bırakılmalıdır.")
             else:
                 with st.spinner("Hesaplanıyor ve Çiziliyor..."):
-                pdf_data = pdf_olustur(a=a_val, e=e_val, P=P_val, tau=tau_val, cisim_ismi="Özel Gök Cismi")
+                    pdf_data = pdf_olustur(a=a_val, e=e_val, P=P_val, tau=tau_val, cisim_ismi="Özel Gök Cismi")
             
                 st.success("Raporunuz başarıyla hazırlandı!")
                 
