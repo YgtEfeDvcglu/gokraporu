@@ -299,15 +299,14 @@ elif st.session_state.secim == "manuel":
         else:
             with st.spinner("Hesaplanıyor ve Çiziliyor..."):
                 pdf_data = pdf_olustur(a=a_val, e=e_val, P=P_val, tau=tau_val, cisim_ismi="Özel Gök Cismi")
+            
             st.success("Raporunuz başarıyla hazırlandı!")
-                
-                st.download_button(
-                    label="📥 PDF Raporunu İndir",
-                    data=pdf_data,
-                    file_name="Ozel_Hesaplanan_Rapor.pdf",
-                    mime="application/pdf"
-                )
-
+            st.download_button(
+                label="📥 PDF Raporunu İndir",
+                data=pdf_data,
+                file_name="Ozel_Hesaplanan_Rapor.pdf",
+                mime="application/pdf"
+            )
 # ════════════════════════════════════════════════════════════════════
 #  FOOTER (GELİŞTİRİCİ VİZYONU)
 # ════════════════════════════════════════════════════════════════════
