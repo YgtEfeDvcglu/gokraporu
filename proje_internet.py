@@ -268,9 +268,7 @@ if st.session_state.secim == "jpl":
                         tau_val = float(el['Tp_jd'][0])
                         P_val = (a_val**1.5) * 365.256
                         
-                        pdf_data = pdf_olustur(a, e, P, tau, cisim_ismi=f"Asteroit {cisim_adi.upper()}")
-                        st.success(f"Raporunuz başarıyla hazırlandı! ({cisim_adi})")
-                        
+                        pdf_data = pdf_olustur(a_val, e_val, P_val, tau_val, cisim_ismi=f"Asteroit {cisim_adi.upper()}")
                         st.success(f"Raporunuz başarıyla hazırlandı! ({cisim_adi.upper()})")
                         st.download_button(
                             label="📥 PDF Raporunu İndir",
@@ -278,7 +276,7 @@ if st.session_state.secim == "jpl":
                             file_name=f"{cisim_adi.replace(' ', '_')}_Raporu.pdf",
                             mime="application/pdf"
                         )
-              except Exception as ex:
+                except Exception as ex:
                     st.error(f"Sunucularında hata oluştu veya cisim bulunamadı. Lütfen manuel girişi deneyin. Hata detayı: {ex}")
 
 elif st.session_state.secim == "manuel":
