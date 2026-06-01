@@ -96,7 +96,7 @@ def pdf_olustur(a, e, P, tau, cisim_ismi):
 
     C_BASLIK, C_ALT, C_TH, C_ZEBRA = '#1a2940', '#2e6da4', '#1a2940', '#eaf2fb'
     FW, FH = 8.27, 11.69
-    L, R, T, B = 0.055, 0.955, 0.968, 0.080
+    L, R, T, B = 0.055, 0.955, 0.968, 0.100
 
     pdf_buffer = io.BytesIO() # Fiziksel dosya yerine RAM'de oluştur (Web için şart)
     
@@ -213,7 +213,7 @@ def pdf_olustur(a, e, P, tau, cisim_ismi):
         qr.make(fit=True)
         img_qr = qr.make_image(fill_color="black", back_color="white")
         
-        ax_qr = fig.add_axes([0.80, 0.02, 0.10, 0.10]) # Sağ alt köşeye hizala
+        ax_qr = fig.add_axes([0.85, 0.015, 0.09, 0.09]) 
         ax_qr.imshow(np.array(img_qr.convert('L')), cmap='gray')
         ax_qr.axis('off')
         ax_qr.text(0.5, 1.05, "Siz de kendi raporunuz oluşturmak\niçin sitemize gelebilirsiniz", 
