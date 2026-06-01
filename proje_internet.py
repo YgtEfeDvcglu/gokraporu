@@ -233,15 +233,14 @@ if "secim" not in st.session_state:
 st.title("Hoş Geldiniz! 🔭")
 
 if st.session_state.secim is None:
-    st.markdown("<h4 style='text-align: center; color: #555;'>Hangi yöntemle rapor oluşturmak istersiniz?</h4>", unsafe_allow_html=True)
-    st.write("")
+    st.markdown("<br><h4 style='text-align: center; color: #555;'>Hangi yöntemle rapor oluşturmak istersiniz?</h4><br>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("🛰️\n\nGök Cisminin İsmi İle\n\n(Otomatik JPL Bağlantısı)", use_container_width=True):
+        if st.button("🛰️\n\nCİSİM İSMİ İLE\n\n(Otomatik JPL Bağlantısı)\n\n", use_container_width=True, type="primary"):
             st.session_state.secim = "jpl"
             st.rerun()
     with col2:
-        if st.button("🧮\n\nParametrelerle\n\n(Manuel Giriş)", use_container_width=True):
+        if st.button("🧮\n\nPARAMETRELERLE\n\n(Manuel Giriş)\n\n", use_container_width=True, type="primary"):
             st.session_state.secim = "manuel"
             st.rerun()
 
@@ -312,15 +311,20 @@ elif st.session_state.secim == "manuel":
 # ════════════════════════════════════════════════════════════════════
 #  FOOTER (GELİŞTİRİCİ VİZYONU)
 # ════════════════════════════════════════════════════════════════════
+st.markdown("<br><br><br><br><br><br>", unsafe_allow_html=True)
 st.markdown("---")
-with st.expander("Geliştirici Vizyonu 🚀"):
+
+# Eğer henüz seçim yapılmadıysa vizyon kutusu açık, seçim yapıldıysa kapalı gelsin
+kutu_acik_mi = st.session_state.secim is None
+
+with st.expander("Geliştirici Vizyonu 🚀", expanded=kutu_acik_mi):
     st.markdown(
-        "Ankara Üniversitesi Astronomi ve Uzay Bilimleri bölümünde öğrenim görüyor; teorik astronomi, "
-        "gök mekaniği ve yörünge dinamikleri üzerine çalışıyorum. Python kullanarak geliştirdiğim "
+        "Ankara Üniversitesi Astronomi ve Uzay Bilimleri bölümünde öğrenim görüyor; teorik astronominin "
+        "pekçok noktasıyla ilgiliyim. Python kullanarak geliştirdiğim "
         "matematiksel modellemeleri ve bilimsel veri analizi araçlarını, herkesin erişebileceği dinamik "
-        "uygulamalara dönüştürmeyi hedefliyorum. Başlangıçta yörünge parametrelerinin sayısal analizi ve "
+        "uygulamalara dönüştürmeyi hedefliyorum./n Başlangıçta yörünge parametrelerinin sayısal analizi ve "
         "Kepler denkleminin çözümü için kurguladığım bu Python tabanlı gök mekaniği motorunu, arayüz "
         "tasarımında vakit kaybetmemek ve odağı tamamen işlevsellikte tutmak adına modern yapay zeka "
-        "araçları yardımıyla otonom bir efemeris raporlayıcısına çevirdim. Amacım, karmaşık bilimsel "
+        "araçları yardımıyla otonom bir efemeris raporlayıcısına çevirdim./n Amacım, karmaşık bilimsel "
         "hesaplamaları hantal süreçlerden kurtarıp hızlı, otonom ve kullanıcı dostu araçlar haline getirmektir."
     )
