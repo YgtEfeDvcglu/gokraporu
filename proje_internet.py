@@ -228,12 +228,15 @@ def pdf_olustur(a, e, P, tau, cisim_ismi):
 # ════════════════════════════════════════════════════════════════════
 #  WEB ARAYÜZÜ (STREAMLIT)
 # ════════════════════════════════════════════════════════════════════
-st.title("Hoş Geldiniz! 🚀")
+st.title("Hoş Geldiniz! 🔭")
 st.markdown("Hangi şekilde efemeris tablosu ve yörünge hareketini çizdirmek isterdiniz?")
 
-secim = st.radio("Seçiminiz:", ["Gök Cisminin İsmiyle (Otomatik JPL Bağlantısı)", "Yörünge Parametrelerini Kendim Gireceğim"], label_visibility="collapsed")
+secim = st.radio("Lütfen bir yöntem seçin:", 
+                 ["Cisim İsmi İle (Otomatik JPL Bağlantısı)", 
+                  "Yörünge Parametrelerini Kendim Gireceğim"], 
+                 index=None)
 
-if "İsmiyle" in secim:
+if secim == "Cisim İsmi İle (Otomatik JPL Bağlantısı)":
     st.info("💡 JPL Horizons veritabanı kullanılarak parametreler otomatik çekilir. Örneğin: '2010 LP33', 'Ceres', 'Halley'")
     cisim_adi = st.text_input("Gök Cisminin Adı:", placeholder="Örn: 2010 LP33")
     
