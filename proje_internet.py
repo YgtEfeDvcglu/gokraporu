@@ -120,14 +120,7 @@ def pdf_olustur(a, e, P, tau, cisim_ismi):
 
         yaz(0.00, yp, "Ad Soyad: ", fs=9.5, renk='#222')
         yaz(0.44, yp, "Öğrenci No: ", fs=9.5, renk='#222')
-        yaz(0.74, yp, "İmza:", fs=9.5, renk='#222')
-
-        imza_rect = plt.Rectangle((L + 0.80*(R-L), METIN_BOT + (yp - pt2y(13)) * (T - METIN_BOT)), 
-                                  R - 0.008 - (L + 0.80*(R-L)), pt2y(13) * (T - METIN_BOT),
-                                  linewidth=0.9, edgecolor='#666', facecolor='#fafafa',
-                                  transform=fig.transFigure, zorder=5, clip_on=False)
-        fig.add_artist(imza_rect)
-
+       yaz(0.74, yp, "İmza:", fs=9.5, renk='#222')
         yp -= pt2y(13) + pt2y(7); cizgi(yp, renk='#dddddd'); yp -= pt2y(5)
 
         yaz(0.0, yp, "1.  RAPOR ÖZETİ", fs=9.5, bold=True, renk=C_ALT); yp -= pt2y(9.5) + pt2y(4)
@@ -248,7 +241,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 if st.session_state.secim is None:
-    st.markdown("<br><h4 style='text-align: center; color: #555;'>Hangi yöntemle rapor oluşturmak istersiniz?</h4><br>", unsafe_allow_html=True)
+    st.markdown("<br><h3 style='text-align: center; color: #2c3e50; font-weight: 600;'>Hangi yöntemle rapor oluşturmak istersiniz?</h3><br>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
         if st.button("🛰️\n\nCİSİM İSMİ İLE\n\n(Otomatik JPL Bağlantısı)\n\n", use_container_width=True, type="primary"):
