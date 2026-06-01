@@ -8,7 +8,7 @@ import warnings
 import io
 import qrcode
 from astroquery.jplhorizons import Horizons
-
+import plotly.graph_objects as go
 warnings.filterwarnings("ignore")
 
 # ════════════════════════════════════════════════════════════════════
@@ -83,7 +83,47 @@ def anlamli_noktalar(a, e, P, tau):
         (t_from_M(M4,   0),  M4,   E4,      3*np.pi/2,   r4,      "ν = 270°"),
         (t_from_M(M2,   1),  M2,   E2,      np.pi/2,     r2,      "Sonraki ν=90°"),
     ]
+def uzay_3d_donusum(x, y, i_deg, W_deg, w_deg):
+    i_rad, W_rad, w_rad = np.radians(i_deg), np.radians(W_deg), np.radians(w_deg)
+    
+    X = x * (np.cos(W_rad)*np.cos(w_rad) - np.sin(W_rad)*np.sin(w_rad)*np.cos(i_rad)) + \
+        y * (-np.cos(W_rad)*np.sin(w_rad) - np.sin(W_rad)*np.cos(w_rad)*np.cos(i_rad))
+    Y = x * (np.sin(W_rad)*np.cos(w_rad) + np.cos(W_rad)*np.sin(w_rad)*np.cos(i_rad)) + \
+        y * (-np.sin(W_rad)*np.sin(w_rad) + np.cos(W_rad)*np.cos(w_rad)*np.cos(i_rad))
+    Z = x * (np.sin(w_rad)*np.sin(i_rad)) + \
+        y * (np.cos(w_rad)*np.sin(i_rad))
+    return X, Y, Z
 
+def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
+    t_g = np.linspace(tau, tau+P, 1000)
+    _, _, _, _, x_g, y_g = hesapla(t_g, a, e, P, tau)
+    X_g, Y_g, Z_g = uzay_3d_donusum(x_g, y_g, i, W, w)
+    
+    fig = go.Figure()
+    # Merkez (Güneş)
+    fig.add_trace(go.Scatter3d(x=[0], y=[0], z=[0], mode='markers', 
+                               marker=dict(size=10, color='#f39c12', line=dict(color='white', width=1.5)), name='Güneş'))
+    # Yörünge Çizgisi
+    fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', 
+                               line=dict(color='#1a2940', width=4.5), name=f'{cisim_ismi} Yörüngesi'))
+    
+    # Ekliptik Düzlem (Z=0 Referans Yüzeyi)
+    xy_limit = max(abs(X_g).max(), abs(Y_g).max()) * 1.2
+    grid_val = np.linspace(-xy_limit, xy_limit, 2)
+    xg, yg = np.meshgrid(grid_val, grid_val)
+    fig.add_trace(go.Surface(x=xg, y=yg, z=np.zeros_like(xg), opacity=0.15, showscale=False, colorscale='Blues', name='Ekliptik Düzlem'))
+    
+    fig.update_layout(
+        scene=dict(
+            xaxis=dict(title='X (AB)', showgrid=True, zeroline=True),
+            yaxis=dict(title='Y (AB)', showgrid=True, zeroline=True),
+            zaxis=dict(title='Z (AB)', showgrid=True, zeroline=True),
+            aspectmode='data'
+        ),
+        margin=dict(l=0, r=0, b=0, t=40),
+        title=dict(text=f"<b>{cisim_ismi} - 3D Uzaysal Yörünge</b>", x=0.5, font=dict(size=14))
+    )
+    return fig
 # ════════════════════════════════════════════════════════════════════
 #  PDF OLUŞTURUCU MOTOR
 # ════════════════════════════════════════════════════════════════════
@@ -280,8 +320,16 @@ if st.session_state.secim == "jpl":
                         tau_val = float(el['Tp_jd'][0])
                         P_val = (a_val**1.5) * 365.256
                         
+                        i_val = float(el['incl'][0])
+                        W_val = float(el['node'][0])
+                        w_val = float(el['argperi'][0])
+
                         pdf_data = pdf_olustur(a_val, e_val, P_val, tau_val, cisim_ismi=f"Asteroit {cisim_adi.upper()}")
                         st.success(f"Raporunuz başarıyla hazırlandı! ({cisim_adi.upper()})")
+                        
+                        # 3D Simülasyonu Ekrana Bas (Sadece Arayüzde)
+                        st.plotly_chart(plotly_3d_ciz(a_val, e_val, P_val, tau_val, i_val, W_val, w_val, cisim_adi.upper()), use_container_width=True)
+
                         st.download_button(
                             label="📥 PDF Raporunu İndir",
                             data=pdf_data,
@@ -296,7 +344,9 @@ elif st.session_state.secim == "manuel":
         st.session_state.secim = None
         st.rerun()
         
-    st.info("💡 Lütfen yörünge parametrelerini eksiksiz girin.")
+    st.info("💡 Lütfen temel yörünge parametrelerini eksiksiz girin. 3D simülasyon için uzaysal parametreleri de ekleyebilirsiniz.")
+    
+    st.markdown("#### Temel Parametreler (Zorunlu)")
     col1, col2 = st.columns(2)
     with col1:
         a_val = st.number_input("Yarı-büyük eksen (a) [AB]", min_value=0.001, value=None, placeholder="Örn: 2.55", step=0.1)
@@ -305,15 +355,35 @@ elif st.session_state.secim == "manuel":
         P_val = st.number_input("Dönem (P) [Gün]", min_value=0.1, value=None, placeholder="Örn: 1491.04", step=10.0)
         tau_val = st.number_input("Enberiden geçiş (τ) [JD]", value=None, placeholder="Örn: 2458344.234332", step=100.0, format="%.6f")
         
+    st.markdown("#### Uzaysal Parametreler (3D Simülasyon İçin İsteğe Bağlı)")
+    col3, col4, col5 = st.columns(3)
+    with col3:
+        i_val = st.number_input("Eğiklik (i) [°]", min_value=0.0, max_value=180.0, value=None, placeholder="Örn: 10.5", step=1.0)
+    with col4:
+        W_val = st.number_input("Çıkış Düğümü (Ω) [°]", min_value=0.0, max_value=360.0, value=None, placeholder="Örn: 80.3", step=1.0)
+    with col5:
+        w_val = st.number_input("Enberi Arg. (ω) [°]", min_value=0.0, max_value=360.0, value=None, placeholder="Örn: 73.1", step=1.0)
+        
     if st.button("Raporu Oluştur 📝"):
         if None in [a_val, e_val, P_val, tau_val]:
-            st.warning("Lütfen raporu oluşturmadan önce tüm parametreleri doldurun.")
+            st.warning("Lütfen raporu oluşturmadan önce Temel Parametreleri eksiksiz doldurun.")
         else:
-            with st.spinner("Hesaplanıyor ve Çiziliyor..."):
+            uzaysal_girdiler = [i_val, W_val, w_val]
+            uzaysal_dolu_sayisi = sum(x is not None for x in uzaysal_girdiler)
+            
+            if uzaysal_dolu_sayisi > 0 and uzaysal_dolu_sayisi < 3:
+                st.warning("⚠️ 3D simülasyon oluşturabilmek için i, Ω ve ω değerlerinin üçü de girilmelidir veya üçü de boş bırakılmalıdır.")
+            else:
+                with st.spinner("Hesaplanıyor ve Çiziliyor..."):
                 pdf_data = pdf_olustur(a=a_val, e=e_val, P=P_val, tau=tau_val, cisim_ismi="Özel Gök Cismi")
             
-            st.success("Raporunuz başarıyla hazırlandı!")
-            st.download_button(
+                st.success("Raporunuz başarıyla hazırlandı!")
+                
+                # Sadece uzaysal veri tam girilmişse 3D bas
+                if uzaysal_dolu_sayisi == 3:
+                    st.plotly_chart(plotly_3d_ciz(a_val, e_val, P_val, tau_val, i_val, W_val, w_val, "Özel Gök Cismi"), use_container_width=True)
+                
+                st.download_button(
                 label="📥 PDF Raporunu İndir",
                 data=pdf_data,
                 file_name="Ozel_Hesaplanan_Rapor.pdf",
