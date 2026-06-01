@@ -207,16 +207,16 @@ def pdf_olustur(a, e, P, tau, cisim_ismi):
         ax_p.legend(loc='upper right', fontsize=7.5, framealpha=0.92, edgecolor='#cccccc')
 
         # --- QR KOD EKLEME ---
-        site_url = "https://[sitenin-ismi].streamlit.app" # Burayı Streamlit yayınlanınca güncelleyebilirsin
-        qr = qrcode.QRCode(box_size=10, border=1)
+        site_url = "https://gokraporu.streamlit.app/" # Burayı Streamlit yayınlanınca güncelleyebilirsin
+        qr = qrcode.QRCode(box_size=10, border=0)
         qr.add_data(site_url)
         qr.make(fit=True)
         img_qr = qr.make_image(fill_color="black", back_color="white")
         
-        ax_qr = fig.add_axes([0.84, 0.04, 0.10, 0.10]) # Sağ alt köşeye hizala
+        ax_qr = fig.add_axes([0.80, 0.02, 0.10, 0.10]) # Sağ alt köşeye hizala
         ax_qr.imshow(np.array(img_qr.convert('L')), cmap='gray')
         ax_qr.axis('off')
-        ax_qr.text(0.5, 1.05, "Bu uygulamayı kullanmak\niçin taratın", 
+        ax_qr.text(0.5, 1.05, "Siz de kendi raporunuz oluşturmak\için sitemize gelebilirsiniz", 
                    transform=ax_qr.transAxes, ha='center', va='bottom', fontsize=6, color='#555')
         
         pdf.savefig(fig, dpi=220)
