@@ -164,7 +164,7 @@ def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
         scene=dict(xaxis=dict(title='X (AB)'), yaxis=dict(title='Y (AB)'), zaxis=dict(title='Z (AB)'), aspectmode='data'),
         margin=dict(l=0, r=0, b=0, t=80),
         title=dict(text=f"<b>{cisim_ismi} - Şu Anki Konum Modeli</b>", x=0.5, y=0.95, font=dict(size=16)),
-        legend=dict(x=0.8, y=0.9, bgcolor='rgba(255,255,255,0.7)', bordercolor='#ddd', borderwidth=1)
+        legend=dict(x=0.01, y=0.99, xanchor='left', yanchor='top', bgcolor='rgba(255,255,255,0.7)', bordercolor='#ddd', borderwidth=1)
     )
     return fig
 # ════════════════════════════════════════════════════════════════════
