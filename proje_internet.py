@@ -18,9 +18,18 @@ st.set_page_config(page_title="Gök Mekaniği Raporlayıcı", layout="centered",
 
 st.sidebar.title("Hakkımda")
 st.sidebar.info(
-    "**[Buraya Kendi Adını Yaz]**\n\n"
-    "[Kendini tanıttığın, astronomi ve uzay bilimleri üzerine vizyonunu "
-    "veya bu projeyi yapma amacını anlatan kısa bir metin gir.]"
+    "**Yiğit Efe Devecioğlu**\n\n"
+    "Ankara Üniversitesi Astronomi ve Uzay Bilimleri bölümünde öğrenim görüyor;"
+    "teorik astronomi, gök mekaniği ve yörünge dinamikleri üzerine çalışıyorum."
+    "Python kullanarak geliştirdiğim matematiksel modellemeleri ve bilimsel veri analizi araçlarını,"
+    "herkesin erişebileceği dinamik uygulamalara dönüştürmeyi hedefliyorum."
+    "Başlangıçta yörünge parametrelerinin sayısal analizi ve"
+    "Kepler denkleminin çözümü için kurguladığım bu Python tabanlı gök mekaniği motorunu,"
+    "modern yapay zeka araçları ve arayüz kütüphaneleri (Streamlit) yardımıyla"
+    "tam otonom bir efemeris raporlayıcısına çevirdim."
+    "Amacım, karmaşık bilimsel hesaplamaları hantal süreçlerden kurtarıp"
+    "hızlı, otonom ve kullanıcı dostu araçlar haline getirmektir."
+     
 )
 st.sidebar.markdown("---")
 st.sidebar.caption("© 2026 Tüm Hakları Saklıdır. [Proje/Ders Adı İçin Geliştirilmiştir]")
