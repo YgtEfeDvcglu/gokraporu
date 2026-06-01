@@ -10,7 +10,7 @@ import qrcode
 from astroquery.jplhorizons import Horizons
 import plotly.graph_objects as go
 warnings.filterwarnings("ignore")
-
+from datetime import datetime, timezone
 # ════════════════════════════════════════════════════════════════════
 #  SAYFA AYARLARI VE YAN MENÜ (SIDEBAR)
 # ════════════════════════════════════════════════════════════════════
@@ -94,6 +94,22 @@ def uzay_3d_donusum(x, y, i_deg, W_deg, w_deg):
         y * (np.cos(w_rad)*np.sin(i_rad))
     return X, Y, Z
 
+def su_anki_jd():
+    # Şu anki UTC zamanını alıp Julian Day'e çeviren fonksiyon
+    simdi = datetime.now(timezone.utc)
+    yil, ay, gun = simdi.year, simdi.month, simdi.day
+    saat, dk, sn = simdi.hour, simdi.minute, simdi.second
+    
+    if ay <= 2:
+        yil -= 1
+        ay += 12
+    
+    A = yil // 100
+    B = 2 - A + (A // 4)
+    jd_tam = int(365.25 * (yil + 4716)) + int(30.6001 * (ay + 1)) + gun + B - 1524.5
+    jd_kesir = (saat + dk / 60.0 + sn / 3600.0) / 24.0
+    return jd_tam + jd_kesir
+
 def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
     t_g = np.linspace(tau, tau+P, 1000)
     _, _, _, r_g, x_g, y_g = hesapla(t_g, a, e, P, tau)
@@ -102,6 +118,16 @@ def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
     # Enberi ve Enöte indisleri
     idx_enberi, idx_enote = np.argmin(r_g), np.argmax(r_g)
     
+    # ---------------------------------------------------------
+    # ŞU ANKİ KONUMUN HESAPLANMASI
+    # ---------------------------------------------------------
+    jd_su_an = su_anki_jd()
+    _, _, _, _, x_suan, y_suan = hesapla(jd_su_an, a, e, P, tau)
+    X_suan, Y_suan, Z_suan = uzay_3d_donusum(x_suan, y_suan, i, W, w)
+    # Numpy array dönüyorsa içindeki tek değeri çıkarıyoruz
+    if isinstance(X_suan, np.ndarray):
+        X_suan, Y_suan, Z_suan = X_suan[0], Y_suan[0], Z_suan[0]
+        
     fig = go.Figure()
     
     # 1. Merkez (Güneş)
@@ -112,11 +138,11 @@ def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
     fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', 
                                line=dict(color='#1a2940', width=5), name=f'{cisim_ismi} Yörüngesi'))
                                
-    # 3. Ana Cismin Kendisi (Simbolik Küre - Enberi noktasında başlatıyoruz)
-    fig.add_trace(go.Scatter3d(x=[X_g[idx_enberi]], y=[Y_g[idx_enberi]], z=[Z_g[idx_enberi]], mode='markers', 
-                               marker=dict(size=7, color='lightgray', line=dict(color='#333', width=1)), name=f'{cisim_ismi} Cismi'))
+    # 3. Ana Cismin Kendisi (Şu anki gerçek konumunda)
+    fig.add_trace(go.Scatter3d(x=[X_suan], y=[Y_suan], z=[Z_suan], mode='markers', 
+                               marker=dict(size=8, color='#e74c3c', line=dict(color='white', width=1)), name=f'{cisim_ismi} (Şu An)'))
     
-    # 4. Enberi ve Enöte Vektörleri (Oklar ve Metinler)
+    # 4. Enberi ve Enöte Vektörleri
     fig.add_trace(go.Scatter3d(x=[0, X_g[idx_enberi]], y=[0, Y_g[idx_enberi]], z=[0, Z_g[idx_enberi]],
                                mode='lines+text', line=dict(color='#1e8449', width=2, dash='dash'),
                                text=['', f'Enberi: {r_g[idx_enberi]:.2f} AB'], textposition='top center', 
@@ -127,7 +153,7 @@ def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
                                text=['', f'Enöte: {r_g[idx_enote]:.2f} AB'], textposition='top center', 
                                textfont=dict(size=10, color='#7d3c98'), name='Enöte Vektörü'))
 
-    # 5. Referans Yörüngeler: Dünya ve Jüpiter (Gerçek Parametrelerle)
+    # 5. Referans Yörüngeler
     # Dünya (a=1.0, e=0.0167, P=365.25, i=0, W=0, w=102.9)
     _, _, _, _, x_e, y_e = hesapla(np.linspace(0, 365.25, 300), 1.0, 0.0167, 365.25, 0)
     Xe, Ye, Ze = uzay_3d_donusum(x_e, y_e, 0.0, 0.0, 102.9)
@@ -154,7 +180,7 @@ def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
             aspectmode='data'
         ),
         margin=dict(l=0, r=0, b=0, t=40),
-        title=dict(text=f"<b>{cisim_ismi} - 3D Uzaysal Yörünge Modeli</b>", x=0.5, font=dict(size=16)),
+        title=dict(text=f"<b>{cisim_ismi} - Şu Anki Konum Modeli</b>", x=0.5, font=dict(size=16)),
         legend=dict(x=0.8, y=0.9, bgcolor='rgba(255,255,255,0.7)', bordercolor='#ddd', borderwidth=1)
     )
     return fig
