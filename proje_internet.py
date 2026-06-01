@@ -258,7 +258,9 @@ if st.session_state.secim == "jpl":
         st.session_state.secim = None
         st.rerun()
         
-    st.info("💡 JPL Horizons veritabanı kullanılarak parametreler otomatik çekilir. Örneğin: '2010 LP33', 'Ceres', 'Halley'")
+    st.info("💡 JPL Horizons veritabanı kullanılarak parametreler otomatik çekilir. "
+            "Emin olmadığınız cisim isimlerini [NASA JPL Horizons](https://ssd.jpl.nasa.gov/horizons/app.html#/) "
+            "üzerinden kontrol edebilirsiniz. Örn: '2010 LP33', 'Ceres', 'Halley'")
     cisim_adi = st.text_input("Gök Cisminin Adı:", placeholder="Örn: 2010 LP33")
     
     if st.button("Raporu Oluştur 📝"):
