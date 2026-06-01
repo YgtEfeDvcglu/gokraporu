@@ -120,7 +120,7 @@ def pdf_olustur(a, e, P, tau, cisim_ismi):
 
         yaz(0.00, yp, "Ad Soyad: ", fs=9.5, renk='#222')
         yaz(0.44, yp, "Öğrenci No: ", fs=9.5, renk='#222')
-       yaz(0.74, yp, "İmza:", fs=9.5, renk='#222')
+        yaz(0.74, yp, "İmza:", fs=9.5, renk='#222')
         yp -= pt2y(13) + pt2y(7); cizgi(yp, renk='#dddddd'); yp -= pt2y(5)
 
         yaz(0.0, yp, "1.  RAPOR ÖZETİ", fs=9.5, bold=True, renk=C_ALT); yp -= pt2y(9.5) + pt2y(4)
