@@ -16,26 +16,30 @@ warnings.filterwarnings("ignore")
 # ════════════════════════════════════════════════════════════════════
 st.set_page_config(page_title="Gök Mekaniği Raporlayıcı", layout="centered", page_icon="🪐")
 
-st.sidebar.title("Hakkımda")
-st.sidebar.info(
-    "**Yiğit Efe Devecioğlu**\n\n"
-    "Ankara Üniversitesi Astronomi ve Uzay Bilimleri bölümünde öğrenim görüyor;"
-    "teorik astronomi, gök mekaniği ve yörünge dinamikleri üzerine çalışıyorum."
-    "Python kullanarak geliştirdiğim matematiksel modellemeleri ve bilimsel veri analizi araçlarını,"
-    "herkesin erişebileceği dinamik uygulamalara dönüştürmeyi hedefliyorum."
-    "Başlangıçta yörünge parametrelerinin sayısal analizi ve"
-    "Kepler denkleminin çözümü için kurguladığım bu Python tabanlı gök mekaniği motorunu,"
-    "modern yapay zeka araçları ve arayüz kütüphaneleri (Streamlit) yardımıyla"
-    "tam otonom bir efemeris raporlayıcısına çevirdim."
-    "Amacım, karmaşık bilimsel hesaplamaları hantal süreçlerden kurtarıp"
-    "hızlı, otonom ve kullanıcı dostu araçlar haline getirmektir."
-     
-)
+@st.dialog("Geliştirici Vizyonu 🚀")
+def hakkimda_modal():
+    st.markdown(
+        "Ankara Üniversitesi Astronomi ve Uzay Bilimleri bölümünde öğrenim görüyor; teorik astronomi, "
+        "gök mekaniği ve yörünge dinamikleri üzerine çalışıyorum. Python kullanarak geliştirdiğim "
+        "matematiksel modellemeleri ve bilimsel veri analizi araçlarını, herkesin erişebileceği dinamik "
+        "uygulamalara dönüştürmeyi hedefliyorum. Başlangıçta yörünge parametrelerinin sayısal analizi ve "
+        "Kepler denkleminin çözümü için kurguladığım bu Python tabanlı gök mekaniği motorunu, arayüz "
+        "tasarımında vakit kaybetmemek ve odağı tamamen işlevsellikte tutmak adına modern yapay zeka "
+        "araçları yardımıyla otonom bir efemeris raporlayıcısına çevirdim. Amacım, karmaşık bilimsel "
+        "hesaplamaları hantal süreçlerden kurtarıp hızlı, otonom ve kullanıcı dostu araçlar haline getirmektir."
+    )
+
+st.sidebar.title("Proje Hakkında")
+if st.sidebar.button("Geliştirici Vizyonu", use_container_width=True):
+    hakkimda_modal()
+
 st.sidebar.markdown("---")
-st.sidebar.caption("© 2026 Tüm Hakları Saklıdır. [Proje/Ders Adı İçin Geliştirilmiştir]")
+st.sidebar.caption("© 2026 Tüm Hakları Saklıdır.\n\n"
+                   "Bu araç, yörünge dinamikleri hesaplamalarını otomatize "
+                   "etmek amacıyla geliştirilmiş açık kaynaklı bir projedir.")
 
 # ════════════════════════════════════════════════════════════════════
-#  HESAPLAMA FONKSİYONLARI (Önceki kodun aynısı, Streamlit uyumlu)
+#  YARDIMCI FONKSİYONLAR (Önceki kodun aynısı)
 # ════════════════════════════════════════════════════════════════════
 def jd_to_date(jd):
     jd = jd + 0.5
