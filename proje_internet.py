@@ -96,32 +96,66 @@ def uzay_3d_donusum(x, y, i_deg, W_deg, w_deg):
 
 def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
     t_g = np.linspace(tau, tau+P, 1000)
-    _, _, _, _, x_g, y_g = hesapla(t_g, a, e, P, tau)
+    _, _, _, r_g, x_g, y_g = hesapla(t_g, a, e, P, tau)
     X_g, Y_g, Z_g = uzay_3d_donusum(x_g, y_g, i, W, w)
     
-    fig = go.Figure()
-    # Merkez (Güneş)
-    fig.add_trace(go.Scatter3d(x=[0], y=[0], z=[0], mode='markers', 
-                               marker=dict(size=10, color='#f39c12', line=dict(color='white', width=1.5)), name='Güneş'))
-    # Yörünge Çizgisi
-    fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', 
-                               line=dict(color='#1a2940', width=4.5), name=f'{cisim_ismi} Yörüngesi'))
+    # Enberi ve Enöte indisleri
+    idx_enberi, idx_enote = np.argmin(r_g), np.argmax(r_g)
     
-    # Ekliptik Düzlem (Z=0 Referans Yüzeyi)
-    xy_limit = max(abs(X_g).max(), abs(Y_g).max()) * 1.2
+    fig = go.Figure()
+    
+    # 1. Merkez (Güneş)
+    fig.add_trace(go.Scatter3d(x=[0], y=[0], z=[0], mode='markers', 
+                               marker=dict(size=12, color='#f39c12', line=dict(color='white', width=1.5)), name='Güneş', hoverinfo='name'))
+    
+    # 2. Ana Cismin Yörüngesi
+    fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', 
+                               line=dict(color='#1a2940', width=5), name=f'{cisim_ismi} Yörüngesi'))
+                               
+    # 3. Ana Cismin Kendisi (Simbolik Küre - Enberi noktasında başlatıyoruz)
+    fig.add_trace(go.Scatter3d(x=[X_g[idx_enberi]], y=[Y_g[idx_enberi]], z=[Z_g[idx_enberi]], mode='markers', 
+                               marker=dict(size=7, color='lightgray', line=dict(color='#333', width=1)), name=f'{cisim_ismi} Cismi'))
+    
+    # 4. Enberi ve Enöte Vektörleri (Oklar ve Metinler)
+    fig.add_trace(go.Scatter3d(x=[0, X_g[idx_enberi]], y=[0, Y_g[idx_enberi]], z=[0, Z_g[idx_enberi]],
+                               mode='lines+text', line=dict(color='#1e8449', width=2, dash='dash'),
+                               text=['', f'Enberi: {r_g[idx_enberi]:.2f} AB'], textposition='top center', 
+                               textfont=dict(size=10, color='#1e8449'), name='Enberi Vektörü'))
+                               
+    fig.add_trace(go.Scatter3d(x=[0, X_g[idx_enote]], y=[0, Y_g[idx_enote]], z=[0, Z_g[idx_enote]],
+                               mode='lines+text', line=dict(color='#7d3c98', width=2, dash='dash'),
+                               text=['', f'Enöte: {r_g[idx_enote]:.2f} AB'], textposition='top center', 
+                               textfont=dict(size=10, color='#7d3c98'), name='Enöte Vektörü'))
+
+    # 5. Referans Yörüngeler: Dünya ve Jüpiter (Gerçek Parametrelerle)
+    # Dünya (a=1.0, e=0.0167, P=365.25, i=0, W=0, w=102.9)
+    _, _, _, _, x_e, y_e = hesapla(np.linspace(0, 365.25, 300), 1.0, 0.0167, 365.25, 0)
+    Xe, Ye, Ze = uzay_3d_donusum(x_e, y_e, 0.0, 0.0, 102.9)
+    fig.add_trace(go.Scatter3d(x=Xe, y=Ye, z=Ze, mode='lines', 
+                               line=dict(color='#2980b9', width=2, dash='dot'), name='Dünya Yörüngesi', hoverinfo='name'))
+    
+    # Jüpiter (a=5.204, e=0.0489, P=4332.59, i=1.3, W=100.5, w=273.8)
+    _, _, _, _, x_j, y_j = hesapla(np.linspace(0, 4332.59, 500), 5.204, 0.0489, 4332.59, 0)
+    Xj, Yj, Zj = uzay_3d_donusum(x_j, y_j, 1.30, 100.5, 273.8)
+    fig.add_trace(go.Scatter3d(x=Xj, y=Yj, z=Zj, mode='lines', 
+                               line=dict(color='#c0392b', width=2, dash='dot'), name='Jüpiter Yörüngesi', hoverinfo='name'))
+
+    # 6. Ekliptik Düzlem Tabanı
+    xy_limit = max(abs(X_g).max(), abs(Y_g).max(), 5.5) * 1.05
     grid_val = np.linspace(-xy_limit, xy_limit, 2)
     xg, yg = np.meshgrid(grid_val, grid_val)
-    fig.add_trace(go.Surface(x=xg, y=yg, z=np.zeros_like(xg), opacity=0.15, showscale=False, colorscale='Blues', name='Ekliptik Düzlem'))
+    fig.add_trace(go.Surface(x=xg, y=yg, z=np.zeros_like(xg), opacity=0.08, showscale=False, colorscale='Greys', name='Ekliptik Düzlem', hoverinfo='skip'))
     
     fig.update_layout(
         scene=dict(
-            xaxis=dict(title='X (AB)', showgrid=True, zeroline=True),
-            yaxis=dict(title='Y (AB)', showgrid=True, zeroline=True),
-            zaxis=dict(title='Z (AB)', showgrid=True, zeroline=True),
+            xaxis=dict(title='X (AB)', showgrid=True, zeroline=True, showbackground=False),
+            yaxis=dict(title='Y (AB)', showgrid=True, zeroline=True, showbackground=False),
+            zaxis=dict(title='Z (AB)', showgrid=True, zeroline=True, showbackground=False),
             aspectmode='data'
         ),
         margin=dict(l=0, r=0, b=0, t=40),
-        title=dict(text=f"<b>{cisim_ismi} - 3D Uzaysal Yörünge</b>", x=0.5, font=dict(size=14))
+        title=dict(text=f"<b>{cisim_ismi} - 3D Uzaysal Yörünge Modeli</b>", x=0.5, font=dict(size=16)),
+        legend=dict(x=0.8, y=0.9, bgcolor='rgba(255,255,255,0.7)', bordercolor='#ddd', borderwidth=1)
     )
     return fig
 # ════════════════════════════════════════════════════════════════════
