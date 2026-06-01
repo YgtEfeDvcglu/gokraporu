@@ -96,7 +96,7 @@ def pdf_olustur(a, e, P, tau, cisim_ismi):
 
     C_BASLIK, C_ALT, C_TH, C_ZEBRA = '#1a2940', '#2e6da4', '#1a2940', '#eaf2fb'
     FW, FH = 8.27, 11.69
-    L, R, T, B = 0.055, 0.955, 0.968, 0.030
+    L, R, T, B = 0.055, 0.955, 0.968, 0.080
 
     pdf_buffer = io.BytesIO() # Fiziksel dosya yerine RAM'de oluştur (Web için şart)
     
