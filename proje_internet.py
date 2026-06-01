@@ -16,23 +16,7 @@ warnings.filterwarnings("ignore")
 # ════════════════════════════════════════════════════════════════════
 st.set_page_config(page_title="Gök Mekaniği Raporlayıcı", layout="centered", page_icon="🪐")
 
-@st.dialog("Geliştirici Vizyonu 🚀")
-def hakkimda_modal():
-    st.markdown(
-        "Ankara Üniversitesi Astronomi ve Uzay Bilimleri bölümünde öğrenim görüyor; teorik astronomi, "
-        "gök mekaniği ve yörünge dinamikleri üzerine çalışıyorum. Python kullanarak geliştirdiğim "
-        "matematiksel modellemeleri ve bilimsel veri analizi araçlarını, herkesin erişebileceği dinamik "
-        "uygulamalara dönüştürmeyi hedefliyorum. Başlangıçta yörünge parametrelerinin sayısal analizi ve "
-        "Kepler denkleminin çözümü için kurguladığım bu Python tabanlı gök mekaniği motorunu, arayüz "
-        "tasarımında vakit kaybetmemek ve odağı tamamen işlevsellikte tutmak adına modern yapay zeka "
-        "araçları yardımıyla otonom bir efemeris raporlayıcısına çevirdim. Amacım, karmaşık bilimsel "
-        "hesaplamaları hantal süreçlerden kurtarıp hızlı, otonom ve kullanıcı dostu araçlar haline getirmektir."
-    )
-
 st.sidebar.title("Proje Hakkında")
-if st.sidebar.button("Geliştirici Vizyonu", use_container_width=True):
-    hakkimda_modal()
-
 st.sidebar.markdown("---")
 st.sidebar.caption("© 2026 Tüm Hakları Saklıdır.\n\n"
                    "Bu araç, yörünge dinamikleri hesaplamalarını otomatize "
@@ -239,17 +223,31 @@ def pdf_olustur(a, e, P, tau, cisim_ismi):
     return pdf_buffer
 
 # ════════════════════════════════════════════════════════════════════
-#  WEB ARAYÜZÜ (STREAMLIT)
+#  ANA ARAYÜZ (UI)
 # ════════════════════════════════════════════════════════════════════
+if "secim" not in st.session_state:
+    st.session_state.secim = None
+
 st.title("Hoş Geldiniz! 🔭")
-st.markdown("Hangi şekilde efemeris tablosu ve yörünge hareketini çizdirmek isterdiniz?")
 
-secim = st.radio("Lütfen bir yöntem seçin:", 
-                 ["Cisim İsmi İle (Otomatik JPL Bağlantısı)", 
-                  "Yörünge Parametrelerini Kendim Gireceğim"], 
-                 index=None)
+if st.session_state.secim is None:
+    st.markdown("<h4 style='text-align: center; color: #555;'>Hangi yöntemle rapor oluşturmak istersiniz?</h4>", unsafe_allow_html=True)
+    st.write("")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🛰️\n\nCisim İsmi İle\n\n(Otomatik JPL Bağlantısı)", use_container_width=True):
+            st.session_state.secim = "jpl"
+            st.rerun()
+    with col2:
+        if st.button("🧮\n\nParametrelerle\n\n(Manuel Giriş)", use_container_width=True):
+            st.session_state.secim = "manuel"
+            st.rerun()
 
-if secim == "Cisim İsmi İle (Otomatik JPL Bağlantısı)":
+if st.session_state.secim == "jpl":
+    if st.button("← Geri Dön / Yöntem Değiştir"):
+        st.session_state.secim = None
+        st.rerun()
+        
     st.info("💡 JPL Horizons veritabanı kullanılarak parametreler otomatik çekilir. Örneğin: '2010 LP33', 'Ceres', 'Halley'")
     cisim_adi = st.text_input("Gök Cisminin Adı:", placeholder="Örn: 2010 LP33")
     
@@ -275,15 +273,19 @@ if secim == "Cisim İsmi İle (Otomatik JPL Bağlantısı)":
                         st.success(f"Raporunuz başarıyla hazırlandı! ({cisim_adi})")
                         
                         st.download_button(
-                            label="📥 PDF Raporunu İndir",
-                            data=pdf_data,
-                            file_name=f"{cisim_adi.replace(' ', '_')}_Raporu.pdf",
-                            mime="application/pdf"
-                        )
-                except Exception as ex:
-                    st.error(f"Sunucularında hata oluştu veya cisim bulunamadı. Lütfen manuel girişi deneyin. Hata detayı: {ex}")
+                        label="📥 PDF Raporunu İndir",
+                        data=pdf_data,
+                        file_name=f"{cisim_adi.replace(' ', '_')}_Raporu.pdf",
+                        mime="application/pdf"
+                    )
+            except Exception as ex:
+                st.error(f"Sunucularında hata oluştu veya cisim bulunamadı. Lütfen manuel girişi deneyin. Hata detayı: {ex}")
 
-elif secim == "Yörünge Parametrelerini Kendim Gireceğim":
+elif st.session_state.secim == "manuel":
+    if st.button("← Geri Dön / Yöntem Değiştir"):
+        st.session_state.secim = None
+        st.rerun()
+        
     st.info("💡 Lütfen yörünge parametrelerini eksiksiz girin.")
     col1, col2 = st.columns(2)
     with col1:
@@ -300,10 +302,26 @@ elif secim == "Yörünge Parametrelerini Kendim Gireceğim":
             with st.spinner("Hesaplanıyor ve Çiziliyor..."):
                 pdf_data = pdf_olustur(a=a_val, e=e_val, P=P_val, tau=tau_val, cisim_ismi="Özel Gök Cismi")
             st.success("Raporunuz başarıyla hazırlandı!")
-            
-            st.download_button(
-                label="📥 PDF Raporunu İndir",
-                data=pdf_data,
-                file_name="Gok_Mekanigi_Ozel_Rapor.pdf",
-                mime="application/pdf"
-            )
+                
+                st.download_button(
+                    label="📥 PDF Raporunu İndir",
+                    data=pdf_data,
+                    file_name="Ozel_Hesaplanan_Rapor.pdf",
+                    mime="application/pdf"
+                )
+
+# ════════════════════════════════════════════════════════════════════
+#  FOOTER (GELİŞTİRİCİ VİZYONU)
+# ════════════════════════════════════════════════════════════════════
+st.markdown("---")
+with st.expander("Geliştirici Vizyonu 🚀"):
+    st.markdown(
+        "Ankara Üniversitesi Astronomi ve Uzay Bilimleri bölümünde öğrenim görüyor; teorik astronomi, "
+        "gök mekaniği ve yörünge dinamikleri üzerine çalışıyorum. Python kullanarak geliştirdiğim "
+        "matematiksel modellemeleri ve bilimsel veri analizi araçlarını, herkesin erişebileceği dinamik "
+        "uygulamalara dönüştürmeyi hedefliyorum. Başlangıçta yörünge parametrelerinin sayısal analizi ve "
+        "Kepler denkleminin çözümü için kurguladığım bu Python tabanlı gök mekaniği motorunu, arayüz "
+        "tasarımında vakit kaybetmemek ve odağı tamamen işlevsellikte tutmak adına modern yapay zeka "
+        "araçları yardımıyla otonom bir efemeris raporlayıcısına çevirdim. Amacım, karmaşık bilimsel "
+        "hesaplamaları hantal süreçlerden kurtarıp hızlı, otonom ve kullanıcı dostu araçlar haline getirmektir."
+    )
