@@ -232,6 +232,21 @@ if "secim" not in st.session_state:
 
 st.title("Hoş Geldiniz! 🔭")
 
+# Buton rengini #008b8b yapmak için CSS müdahalesi
+st.markdown("""
+    <style>
+    div.stButton > button[kind="primary"] {
+        background-color: #008b8b;
+        color: white;
+        border-color: #008b8b;
+    }
+    div.stButton > button[kind="primary"]:hover {
+        background-color: #006b6b;
+        border-color: #006b6b;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 if st.session_state.secim is None:
     st.markdown("<br><h4 style='text-align: center; color: #555;'>Hangi yöntemle rapor oluşturmak istersiniz?</h4><br>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
@@ -311,20 +326,18 @@ elif st.session_state.secim == "manuel":
 # ════════════════════════════════════════════════════════════════════
 #  FOOTER (GELİŞTİRİCİ VİZYONU)
 # ════════════════════════════════════════════════════════════════════
-st.markdown("<br><br><br><br><br><br>", unsafe_allow_html=True)
 st.markdown("---")
 
-# Eğer henüz seçim yapılmadıysa vizyon kutusu açık, seçim yapıldıysa kapalı gelsin
-kutu_acik_mi = st.session_state.secim is None
-
-with st.expander("Geliştirici Vizyonu 🚀", expanded=kutu_acik_mi):
+with st.expander("Geliştirici Vizyonu 🚀", expanded=True):
     st.markdown(
         "Ankara Üniversitesi Astronomi ve Uzay Bilimleri bölümünde öğrenim görüyor; teorik astronominin "
-        "pekçok noktasıyla ilgiliyim. Python kullanarak geliştirdiğim "
+        "pek çok noktasıyla ilgiliyim. Python kullanarak geliştirdiğim "
         "matematiksel modellemeleri ve bilimsel veri analizi araçlarını, herkesin erişebileceği dinamik "
-        "uygulamalara dönüştürmeyi hedefliyorum.n\ Başlangıçta yörünge parametrelerinin sayısal analizi ve "
+        "uygulamalara dönüştürmeyi hedefliyorum.\n\n"
+        "Başlangıçta yörünge parametrelerinin sayısal analizi ve "
         "Kepler denkleminin çözümü için kurguladığım bu Python tabanlı gök mekaniği motorunu, arayüz "
         "tasarımında vakit kaybetmemek ve odağı tamamen işlevsellikte tutmak adına modern yapay zeka "
-        "araçları yardımıyla otonom bir efemeris raporlayıcısına çevirdim.n\ Amacım, karmaşık bilimsel "
-        "hesaplamaları hantal süreçlerden kurtarıp hızlı, otonom ve kullanıcı dostu araçlar haline getirmektir."
+        "araçları yardımıyla otonom bir efemeris raporlayıcısına çevirdim.\n\n"
+        "Amacım, karmaşık bilimsel hesaplamaları hantal süreçlerden kurtarıp hızlı, otonom ve kullanıcı "
+        "dostu araçlar haline getirmektir."
     )
