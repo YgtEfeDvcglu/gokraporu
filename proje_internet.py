@@ -115,72 +115,55 @@ def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
     _, _, _, r_g, x_g, y_g = hesapla(t_g, a, e, P, tau)
     X_g, Y_g, Z_g = uzay_3d_donusum(x_g, y_g, i, W, w)
     
-    # Enberi ve Enöte indisleri
     idx_enberi, idx_enote = np.argmin(r_g), np.argmax(r_g)
     
-    # ---------------------------------------------------------
-    # ŞU ANKİ KONUMUN HESAPLANMASI
-    # ---------------------------------------------------------
     jd_su_an = su_anki_jd()
     _, _, _, _, x_suan, y_suan = hesapla(jd_su_an, a, e, P, tau)
     X_suan, Y_suan, Z_suan = uzay_3d_donusum(x_suan, y_suan, i, W, w)
-    # Numpy array dönüyorsa içindeki tek değeri çıkarıyoruz
     if isinstance(X_suan, np.ndarray):
         X_suan, Y_suan, Z_suan = X_suan[0], Y_suan[0], Z_suan[0]
         
     fig = go.Figure()
     
-    # 1. Merkez (Güneş)
-    fig.add_trace(go.Scatter3d(x=[0], y=[0], z=[0], mode='markers', 
-                               marker=dict(size=12, color='#f39c12', line=dict(color='white', width=1.5)), name='Güneş', hoverinfo='name'))
+    # 1. Güneş ve Ana Cisim
+    fig.add_trace(go.Scatter3d(x=[0], y=[0], z=[0], mode='markers', marker=dict(size=12, color='#f39c12', line=dict(color='white', width=1.5)), name='Güneş', hoverinfo='name'))
+    fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', line=dict(color='#1a2940', width=5), name=f'{cisim_ismi} Yörüngesi'))
+    fig.add_trace(go.Scatter3d(x=[X_suan], y=[Y_suan], z=[Z_suan], mode='markers', marker=dict(size=8, color='#e74c3c', line=dict(color='white', width=1)), name=f'{cisim_ismi} (Şu An)'))
     
-    # 2. Ana Cismin Yörüngesi
-    fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', 
-                               line=dict(color='#1a2940', width=5), name=f'{cisim_ismi} Yörüngesi'))
-                               
-    # 3. Ana Cismin Kendisi (Şu anki gerçek konumunda)
-    fig.add_trace(go.Scatter3d(x=[X_suan], y=[Y_suan], z=[Z_suan], mode='markers', 
-                               marker=dict(size=8, color='#e74c3c', line=dict(color='white', width=1)), name=f'{cisim_ismi} (Şu An)'))
-    
-    # 4. Enberi ve Enöte Vektörleri
-    fig.add_trace(go.Scatter3d(x=[0, X_g[idx_enberi]], y=[0, Y_g[idx_enberi]], z=[0, Z_g[idx_enberi]],
-                               mode='lines+text', line=dict(color='#1e8449', width=2, dash='dash'),
-                               text=['', f'Enberi: {r_g[idx_enberi]:.2f} AB'], textposition='top center', 
-                               textfont=dict(size=10, color='#1e8449'), name='Enberi Vektörü'))
-                               
-    fig.add_trace(go.Scatter3d(x=[0, X_g[idx_enote]], y=[0, Y_g[idx_enote]], z=[0, Z_g[idx_enote]],
-                               mode='lines+text', line=dict(color='#7d3c98', width=2, dash='dash'),
-                               text=['', f'Enöte: {r_g[idx_enote]:.2f} AB'], textposition='top center', 
-                               textfont=dict(size=10, color='#7d3c98'), name='Enöte Vektörü'))
+    # 2. Vektörler
+    fig.add_trace(go.Scatter3d(x=[0, X_g[idx_enberi]], y=[0, Y_g[idx_enberi]], z=[0, Z_g[idx_enberi]], mode='lines+text', line=dict(color='#1e8449', width=2, dash='dash'), text=['', f'Enberi: {r_g[idx_enberi]:.2f} AB'], textposition='top center', textfont=dict(size=10, color='#1e8449'), name='Enberi Vektörü'))
+    fig.add_trace(go.Scatter3d(x=[0, X_g[idx_enote]], y=[0, Y_g[idx_enote]], z=[0, Z_g[idx_enote]], mode='lines+text', line=dict(color='#7d3c98', width=2, dash='dash'), text=['', f'Enöte: {r_g[idx_enote]:.2f} AB'], textposition='top center', textfont=dict(size=10, color='#7d3c98'), name='Enöte Vektörü'))
 
-    # 5. Referans Yörüngeler
-    # Dünya (a=1.0, e=0.0167, P=365.25, i=0, W=0, w=102.9)
+    # 3. Dünya (Yörünge ve Şu Anki Konum)
     _, _, _, _, x_e, y_e = hesapla(np.linspace(0, 365.25, 300), 1.0, 0.0167, 365.25, 0)
     Xe, Ye, Ze = uzay_3d_donusum(x_e, y_e, 0.0, 0.0, 102.9)
-    fig.add_trace(go.Scatter3d(x=Xe, y=Ye, z=Ze, mode='lines', 
-                               line=dict(color='#2980b9', width=2, dash='dot'), name='Dünya Yörüngesi', hoverinfo='name'))
+    fig.add_trace(go.Scatter3d(x=Xe, y=Ye, z=Ze, mode='lines', line=dict(color='#2980b9', width=2, dash='dot'), name='Dünya Yörüngesi', hoverinfo='name'))
     
-    # Jüpiter (a=5.204, e=0.0489, P=4332.59, i=1.3, W=100.5, w=273.8)
+    _, _, _, _, x_e_suan, y_e_suan = hesapla(jd_su_an, 1.0, 0.0167, 365.25, 0)
+    Xe_suan, Ye_suan, Ze_suan = uzay_3d_donusum(x_e_suan, y_e_suan, 0.0, 0.0, 102.9)
+    if isinstance(Xe_suan, np.ndarray): Xe_suan, Ye_suan, Ze_suan = Xe_suan[0], Ye_suan[0], Ze_suan[0]
+    fig.add_trace(go.Scatter3d(x=[Xe_suan], y=[Ye_suan], z=[Ze_suan], mode='markers', marker=dict(size=5, color='#3498db', line=dict(color='white', width=1)), name='Dünya (Şu An)'))
+
+    # 4. Jüpiter (Yörünge ve Şu Anki Konum)
     _, _, _, _, x_j, y_j = hesapla(np.linspace(0, 4332.59, 500), 5.204, 0.0489, 4332.59, 0)
     Xj, Yj, Zj = uzay_3d_donusum(x_j, y_j, 1.30, 100.5, 273.8)
-    fig.add_trace(go.Scatter3d(x=Xj, y=Yj, z=Zj, mode='lines', 
-                               line=dict(color='#c0392b', width=2, dash='dot'), name='Jüpiter Yörüngesi', hoverinfo='name'))
+    fig.add_trace(go.Scatter3d(x=Xj, y=Yj, z=Zj, mode='lines', line=dict(color='#c0392b', width=2, dash='dot'), name='Jüpiter Yörüngesi', hoverinfo='name'))
+    
+    _, _, _, _, x_j_suan, y_j_suan = hesapla(jd_su_an, 5.204, 0.0489, 4332.59, 0)
+    Xj_suan, Yj_suan, Zj_suan = uzay_3d_donusum(x_j_suan, y_j_suan, 1.30, 100.5, 273.8)
+    if isinstance(Xj_suan, np.ndarray): Xj_suan, Yj_suan, Zj_suan = Xj_suan[0], Yj_suan[0], Zj_suan[0]
+    fig.add_trace(go.Scatter3d(x=[Xj_suan], y=[Yj_suan], z=[Zj_suan], mode='markers', marker=dict(size=7, color='#e67e22', line=dict(color='white', width=1)), name='Jüpiter (Şu An)'))
 
-    # 6. Ekliptik Düzlem Tabanı
+    # 5. Ekliptik Düzlem
     xy_limit = max(abs(X_g).max(), abs(Y_g).max(), 5.5) * 1.05
     grid_val = np.linspace(-xy_limit, xy_limit, 2)
     xg, yg = np.meshgrid(grid_val, grid_val)
     fig.add_trace(go.Surface(x=xg, y=yg, z=np.zeros_like(xg), opacity=0.08, showscale=False, colorscale='Greys', name='Ekliptik Düzlem', hoverinfo='skip'))
     
     fig.update_layout(
-        scene=dict(
-            xaxis=dict(title='X (AB)', showgrid=True, zeroline=True, showbackground=False),
-            yaxis=dict(title='Y (AB)', showgrid=True, zeroline=True, showbackground=False),
-            zaxis=dict(title='Z (AB)', showgrid=True, zeroline=True, showbackground=False),
-            aspectmode='data'
-        ),
-        margin=dict(l=0, r=0, b=0, t=40),
-        title=dict(text=f"<b>{cisim_ismi} - Şu Anki Konum Modeli</b>", x=0.5, font=dict(size=16)),
+        scene=dict(xaxis=dict(title='X (AB)'), yaxis=dict(title='Y (AB)'), zaxis=dict(title='Z (AB)'), aspectmode='data'),
+        margin=dict(l=0, r=0, b=0, t=80),
+        title=dict(text=f"<b>{cisim_ismi} - Şu Anki Konum Modeli</b>", x=0.5, y=0.95, font=dict(size=16)),
         legend=dict(x=0.8, y=0.9, bgcolor='rgba(255,255,255,0.7)', bordercolor='#ddd', borderwidth=1)
     )
     return fig
@@ -356,6 +339,9 @@ if st.session_state.secim is None:
 if st.session_state.secim == "jpl":
     if st.button("← Geri Dön / Yöntem Değiştir"):
         st.session_state.secim = None
+        for key in ['aktif_pdf', 'aktif_fig', 'aktif_isim']:
+            if key in st.session_state:
+                del st.session_state[key]
         st.rerun()
         
     st.info("💡 JPL Horizons veritabanı kullanılarak parametreler otomatik çekilir. "
@@ -365,45 +351,47 @@ if st.session_state.secim == "jpl":
     
     if st.button("Raporu Oluştur 📝"):
         if not cisim_adi:
-            st.warning("Lütfen bir cisim adı girin.")
+            st.warning("Lütfen bir gök cismi adı girin.")
         else:
-            with st.spinner("JPL Horizons veritabanına bağlanılıyor... Lütfen bekleyin."):
+            with st.spinner("JPL Horizons veritabanına bağlanılıyor..."):
                 try:
-                    obj = Horizons(id=cisim_adi, location='@sun')
+                    obj = Horizons(id=cisim_adi, location='@sun', epochs=None)
                     el = obj.elements()
-                    
-                    if len(el) == 0:
-                        st.error("Cisim bulunamadı. Lütfen ismi kontrol edip tekrar deneyin.")
-                    else:
+                    if el is not None and len(el) > 0:
                         a_val = float(el['a'][0])
                         e_val = float(el['e'][0])
                         tau_val = float(el['Tp_jd'][0])
                         P_val = (a_val**1.5) * 365.256
-                        
                         i_val = float(el['incl'][0])
                         W_val = float(el['Omega'][0])
                         w_val = float(el['w'][0])
 
-                        pdf_data = pdf_olustur(a_val, e_val, P_val, tau_val, cisim_ismi=f"Asteroit {cisim_adi.upper()}")
-                        st.success(f"Raporunuz başarıyla hazırlandı! ({cisim_adi.upper()})")
-                        
-                        # 3D Simülasyonu Ekrana Bas (Sadece Arayüzde)
-                        st.plotly_chart(plotly_3d_ciz(a_val, e_val, P_val, tau_val, i_val, W_val, w_val, cisim_adi.upper()), use_container_width=True)
+                        st.session_state.aktif_pdf = pdf_olustur(a_val, e_val, P_val, tau_val, cisim_ismi=f"Asteroit {cisim_adi.upper()}")
+                        st.session_state.aktif_fig = plotly_3d_ciz(a_val, e_val, P_val, tau_val, i_val, W_val, w_val, cisim_adi.upper())
+                        st.session_state.aktif_isim = cisim_adi.upper()
+                    else:
+                        st.error("Gök cismi bulunamadı. Lütfen ismi kontrol edip tekrar deneyin.")
+                except Exception as e:
+                    st.error(f"Sunucularında hata oluştu veya cisim bulunamadı. Lütfen manuel girişi deneyin. Hata detayı: {str(e)}")
 
-                        st.download_button(
-                            label="📥 PDF Raporunu İndir",
-                            data=pdf_data,
-                            file_name=f"{cisim_adi.replace(' ', '_')}_Raporu.pdf",
-                            mime="application/pdf"
-                        )
-                except Exception as ex:
-                    st.error(f"Sunucularında hata oluştu veya cisim bulunamadı. Lütfen manuel girişi deneyin. Hata detayı: {ex}")
+    if "aktif_pdf" in st.session_state and st.session_state.secim == "jpl":
+        st.success(f"Raporunuz başarıyla hazırlandı! ({st.session_state.aktif_isim})")
+        st.plotly_chart(st.session_state.aktif_fig, use_container_width=True)
+        st.download_button(
+            label="📥 PDF Raporunu İndir",
+            data=st.session_state.aktif_pdf,
+            file_name=f"{st.session_state.aktif_isim}_Raporu.pdf",
+            mime="application/pdf"
+        )
 
 elif st.session_state.secim == "manuel":
     if st.button("← Geri Dön / Yöntem Değiştir"):
         st.session_state.secim = None
+        for key in ['aktif_pdf', 'aktif_fig', 'aktif_isim']:
+            if key in st.session_state:
+                del st.session_state[key]
         st.rerun()
-        
+
     st.info("💡 Lütfen temel yörünge parametrelerini eksiksiz girin. 3D simülasyon için uzaysal parametreleri de ekleyebilirsiniz.")
     
     st.markdown("#### Temel Parametreler (Zorunlu)")
@@ -435,20 +423,26 @@ elif st.session_state.secim == "manuel":
                 st.warning("⚠️ 3D simülasyon oluşturabilmek için i, Ω ve ω değerlerinin üçü de girilmelidir veya üçü de boş bırakılmalıdır.")
             else:
                 with st.spinner("Hesaplanıyor ve Çiziliyor..."):
-                    pdf_data = pdf_olustur(a=a_val, e=e_val, P=P_val, tau=tau_val, cisim_ismi="Özel Gök Cismi")
+                    st.session_state.aktif_pdf = pdf_olustur(a=a_val, e=e_val, P=P_val, tau=tau_val, cisim_ismi="Özel Gök Cismi")
+                    st.session_state.aktif_isim = "Özel_Gok_Cismi"
+                    
+                    if uzaysal_dolu_sayisi == 3:
+                        st.session_state.aktif_fig = plotly_3d_ciz(a_val, e_val, P_val, tau_val, i_val, W_val, w_val, "Özel Gök Cismi")
+                    elif "aktif_fig" in st.session_state:
+                        del st.session_state["aktif_fig"]
+
+    if "aktif_pdf" in st.session_state and st.session_state.secim == "manuel":
+        st.success("Raporunuz başarıyla hazırlandı!")
+        
+        if "aktif_fig" in st.session_state:
+            st.plotly_chart(st.session_state.aktif_fig, use_container_width=True)
             
-                st.success("Raporunuz başarıyla hazırlandı!")
-                
-                # Sadece uzaysal veri tam girilmişse 3D bas
-                if uzaysal_dolu_sayisi == 3:
-                    st.plotly_chart(plotly_3d_ciz(a_val, e_val, P_val, tau_val, i_val, W_val, w_val, "Özel Gök Cismi"), use_container_width=True)
-                
-                st.download_button(
-                label="📥 PDF Raporunu İndir",
-                data=pdf_data,
-                file_name="Ozel_Hesaplanan_Rapor.pdf",
-                mime="application/pdf"
-            )
+        st.download_button(
+            label="📥 PDF Raporunu İndir",
+            data=st.session_state.aktif_pdf,
+            file_name=f"{st.session_state.aktif_isim}_Raporu.pdf",
+            mime="application/pdf"
+        )
 # ════════════════════════════════════════════════════════════════════
 #  FOOTER (GELİŞTİRİCİ VİZYONU)
 # ════════════════════════════════════════════════════════════════════
