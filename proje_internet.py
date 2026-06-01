@@ -213,7 +213,7 @@ def pdf_olustur(a, e, P, tau, cisim_ismi):
         qr.make(fit=True)
         img_qr = qr.make_image(fill_color="black", back_color="white")
         
-        ax_qr = fig.add_axes([0.80, 0.02, 0.10, 0.02]) # Sağ alt köşeye hizala
+        ax_qr = fig.add_axes([0.80, 0.02, 0.10, 0.10]) # Sağ alt köşeye hizala
         ax_qr.imshow(np.array(img_qr.convert('L')), cmap='gray')
         ax_qr.axis('off')
         ax_qr.text(0.5, 1.05, "Siz de kendi raporunuz oluşturmak\niçin sitemize gelebilirsiniz", 
