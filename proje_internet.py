@@ -223,7 +223,8 @@ def pdf_olustur(a, e, P, tau, cisim_ismi):
 if "secim" not in st.session_state:
     st.session_state.secim = None
 
-st.title("Hoş Geldiniz! 🔭")
+st.markdown("<h1 style='text-align: center; color: #1a2940;'>Otonom Gök Mekaniği Raporlayıcısı 🪐</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; font-size: 1.1em; color: #555;'>Güneş sistemi cisimlerinin yörünge dinamiklerini hesaplayın, efemeris tablolarını oluşturun ve tek tıkla akademik formatta PDF raporları elde edin.</p><hr>", unsafe_allow_html=True)
 
 # Buton rengini #008b8b yapmak için CSS müdahalesi
 st.markdown("""
