@@ -119,8 +119,8 @@ def pdf_olustur(a, e, P, tau, cisim_ismi):
         yaz(0.5, yp, "GÖK MEKANİĞİ PROJE RAPORU", fs=14, bold=True, renk=C_BASLIK, ha='center')
         yp -= pt2y(14) + pt2y(5); cizgi(yp, renk=C_BASLIK, lw=1.0); yp -= pt2y(6)
 
-        yaz(0.00, yp, "Ad Soyad: [Metin Girilecek]", fs=9.5, renk='#222')
-        yaz(0.44, yp, "Öğrenci No: [Metin Girilecek]", fs=9.5, renk='#222')
+        yaz(0.00, yp, "Ad Soyad: ", fs=9.5, renk='#222')
+        yaz(0.44, yp, "Öğrenci No: ", fs=9.5, renk='#222')
         yaz(0.74, yp, "İmza:", fs=9.5, renk='#222')
 
         imza_rect = plt.Rectangle((L + 0.80*(R-L), METIN_BOT + (yp - pt2y(13)) * (T - METIN_BOT)), 
