@@ -235,7 +235,7 @@ if st.session_state.secim is None:
     st.write("")
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("🛰️\n\nCisim İsmi İle\n\n(Otomatik JPL Bağlantısı)", use_container_width=True):
+        if st.button("🛰️\n\nGök Cisminin İsmi İle\n\n(Otomatik JPL Bağlantısı)", use_container_width=True):
             st.session_state.secim = "jpl"
             st.rerun()
     with col2:
