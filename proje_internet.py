@@ -255,7 +255,7 @@ if st.session_state.secim == "jpl":
         if not cisim_adi:
             st.warning("Lütfen bir cisim adı girin.")
         else:
-            with st.spinner("JPL Horizons veritabanına bağlanılıyor..."):
+            with st.spinner("JPL Horizons veritabanına bağlanılıyor... Lütfen bekleyin."):
                 try:
                     obj = Horizons(id=cisim_adi, location='@sun')
                     el = obj.elements()
@@ -263,23 +263,23 @@ if st.session_state.secim == "jpl":
                     if len(el) == 0:
                         st.error("Cisim bulunamadı. Lütfen ismi kontrol edip tekrar deneyin.")
                     else:
-                        # JPL'den verileri ayıkla
-                        a = float(el['a'][0])
-                        e = float(el['e'][0])
-                        tau = float(el['Tp_jd'][0])
-                        P = (a**1.5) * 365.256 # JPL bazen P'yi vermezse Kepler yasasıyla hesaplanır
+                        a_val = float(el['a'][0])
+                        e_val = float(el['e'][0])
+                        tau_val = float(el['Tp_jd'][0])
+                        P_val = (a_val**1.5) * 365.256
                         
                         pdf_data = pdf_olustur(a, e, P, tau, cisim_ismi=f"Asteroit {cisim_adi.upper()}")
                         st.success(f"Raporunuz başarıyla hazırlandı! ({cisim_adi})")
                         
+                        st.success(f"Raporunuz başarıyla hazırlandı! ({cisim_adi.upper()})")
                         st.download_button(
-                        label="📥 PDF Raporunu İndir",
-                        data=pdf_data,
-                        file_name=f"{cisim_adi.replace(' ', '_')}_Raporu.pdf",
-                        mime="application/pdf"
-                    )
-            except Exception as ex:
-                st.error(f"Sunucularında hata oluştu veya cisim bulunamadı. Lütfen manuel girişi deneyin. Hata detayı: {ex}")
+                            label="📥 PDF Raporunu İndir",
+                            data=pdf_data,
+                            file_name=f"{cisim_adi.replace(' ', '_')}_Raporu.pdf",
+                            mime="application/pdf"
+                        )
+                except Exception as ex:
+                    st.error(f"Sunucularında hata oluştu veya cisim bulunamadı. Lütfen manuel girişi deneyin. Hata detayı: {ex}")
 
 elif st.session_state.secim == "manuel":
     if st.button("← Geri Dön / Yöntem Değiştir"):
