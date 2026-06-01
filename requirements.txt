@@ -4,3 +4,4 @@ matplotlib
 astroquery
 qrcode
 pillow
+plotly==5.22.0
