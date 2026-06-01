@@ -268,21 +268,25 @@ if secim == "Cisim İsmi İle (Otomatik JPL Bağlantısı)":
                             mime="application/pdf"
                         )
                 except Exception as ex:
-                    st.error(f"JPL Sunucularında hata oluştu veya cisim bulunamadı. Hata detayı: {ex}")
+                    st.error(f"Sunucularında hata oluştu veya cisim bulunamadı. Lütfen manuel girişi deneyin. Hata detayı: {ex}")
 
-else:
-    st.info("💡 Lütfen yörünge parametrelerini tam ve doğru formatta girin.")
+elif secim == "Yörünge Parametrelerini Kendim Gireceğim":
+    st.info("💡 Lütfen yörünge parametrelerini eksiksiz girin.")
     col1, col2 = st.columns(2)
     with col1:
-        a = st.number_input("Yarı-büyük eksen (a) [AB]", min_value=0.001, value=2.55, step=0.1)
-        e = st.number_input("Dışmerkezlik (e)", min_value=0.0, max_value=0.999, value=0.42, step=0.01)
+        a_val = st.number_input("Yarı-büyük eksen (a) [AB]", min_value=0.001, value=None, placeholder="Örn: 2.55", step=0.1)
+        e_val = st.number_input("Dışmerkezlik (e)", min_value=0.0, max_value=0.999, value=None, placeholder="Örn: 0.42", step=0.01)
     with col2:
-        P = st.number_input("Dönem (P) [Gün]", min_value=0.1, value=1491.04, step=10.0)
-        tau = st.number_input("Enberiden geçiş (τ) [JD]", value=2458344.234332, step=100.0, format="%.6f")
+        P_val = st.number_input("Dönem (P) [Gün]", min_value=0.1, value=None, placeholder="Örn: 1491.04", step=10.0)
+        tau_val = st.number_input("Enberiden geçiş (τ) [JD]", value=None, placeholder="Örn: 2458344.234332", step=100.0, format="%.6f")
         
     if st.button("Raporu Oluştur 📝"):
-        with st.spinner("Hesaplanıyor ve Çiziliyor..."):
-            pdf_data = pdf_olustur(a, e, P, tau, cisim_ismi="Özel Hesaplanan Cisim")
+        if None in [a_val, e_val, P_val, tau_val]:
+            st.warning("Lütfen raporu oluşturmadan önce tüm parametreleri doldurun.")
+        else:
+            with st.spinner("Hesaplanıyor ve Çiziliyor..."):
+                pdf_data = pdf_olustur(a=a_val, e=e_val, P=P_val, tau=tau_val, 
+                                       cisim_ismi="Özel Gök Cismi",
             st.success("Raporunuz başarıyla hazırlandı!")
             
             st.download_button(
