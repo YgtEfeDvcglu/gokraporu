@@ -381,8 +381,8 @@ if st.session_state.secim == "jpl":
                         P_val = (a_val**1.5) * 365.256
                         
                         i_val = float(el['incl'][0])
-                        W_val = float(el['node'][0])
-                        w_val = float(el['argperi'][0])
+                        W_val = float(el['Omega'][0])
+                        w_val = float(el['w'][0])
 
                         pdf_data = pdf_olustur(a_val, e_val, P_val, tau_val, cisim_ismi=f"Asteroit {cisim_adi.upper()}")
                         st.success(f"Raporunuz başarıyla hazırlandı! ({cisim_adi.upper()})")
