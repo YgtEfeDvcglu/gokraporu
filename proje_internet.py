@@ -245,7 +245,7 @@ if st.session_state.secim is None:
     st.markdown("<br><div style='text-align: center; font-size: 1.4em; font-weight: 600;'>Hangi yöntemle rapor oluşturmak istersiniz?</div><br>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("🛰️\n\nCİSİM İSMİ İLE\n\n(Otomatik JPL Bağlantısı)\n\n", use_container_width=True, type="primary"):
+        if st.button("🛰️\n\nGÖK CİSMİNİN İSMİYLE\n\n(Otomatik JPL Bağlantısı)\n\n", use_container_width=True, type="primary"):
             st.session_state.secim = "jpl"
             st.rerun()
     with col2:
