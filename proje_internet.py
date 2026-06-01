@@ -322,9 +322,9 @@ with st.expander("Geliştirici Vizyonu 🚀", expanded=kutu_acik_mi):
         "Ankara Üniversitesi Astronomi ve Uzay Bilimleri bölümünde öğrenim görüyor; teorik astronominin "
         "pekçok noktasıyla ilgiliyim. Python kullanarak geliştirdiğim "
         "matematiksel modellemeleri ve bilimsel veri analizi araçlarını, herkesin erişebileceği dinamik "
-        "uygulamalara dönüştürmeyi hedefliyorum./n Başlangıçta yörünge parametrelerinin sayısal analizi ve "
+        "uygulamalara dönüştürmeyi hedefliyorum.n\ Başlangıçta yörünge parametrelerinin sayısal analizi ve "
         "Kepler denkleminin çözümü için kurguladığım bu Python tabanlı gök mekaniği motorunu, arayüz "
         "tasarımında vakit kaybetmemek ve odağı tamamen işlevsellikte tutmak adına modern yapay zeka "
-        "araçları yardımıyla otonom bir efemeris raporlayıcısına çevirdim./n Amacım, karmaşık bilimsel "
+        "araçları yardımıyla otonom bir efemeris raporlayıcısına çevirdim.n\ Amacım, karmaşık bilimsel "
         "hesaplamaları hantal süreçlerden kurtarıp hızlı, otonom ve kullanıcı dostu araçlar haline getirmektir."
     )
