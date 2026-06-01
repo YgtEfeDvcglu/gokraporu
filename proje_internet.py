@@ -19,7 +19,8 @@ st.set_page_config(page_title="Gök Mekaniği Raporlayıcı", layout="centered",
 st.sidebar.title("Proje Hakkında")
 st.sidebar.markdown("---")
 st.sidebar.caption("© 2026 Tüm Hakları Saklıdır.\n"
-                   "Yiğit Efe Devecioğlu\n\n"
+                   "Yiğit Efe Devecioğlu\n"
+                   "deveciogluyigitefe@gmail.com\n\n"
                    "Bu araç, yörünge dinamikleri hesaplamalarını otomatize "
                    "etmek amacıyla geliştirilmiş açık kaynaklı bir projedir.")
 
