@@ -285,8 +285,7 @@ elif secim == "Yörünge Parametrelerini Kendim Gireceğim":
             st.warning("Lütfen raporu oluşturmadan önce tüm parametreleri doldurun.")
         else:
             with st.spinner("Hesaplanıyor ve Çiziliyor..."):
-                pdf_data = pdf_olustur(a=a_val, e=e_val, P=P_val, tau=tau_val, 
-                                       cisim_ismi="Özel Gök Cismi",
+                pdf_data = pdf_olustur(a=a_val, e=e_val, P=P_val, tau=tau_val, cisim_ismi="Özel Gök Cismi")
             st.success("Raporunuz başarıyla hazırlandı!")
             
             st.download_button(
