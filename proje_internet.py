@@ -223,8 +223,8 @@ def pdf_olustur(a, e, P, tau, cisim_ismi):
 if "secim" not in st.session_state:
     st.session_state.secim = None
 
-st.markdown("<h1 style='text-align: center; color: #1a2940;'>Otonom Gök Mekaniği Raporlayıcısı 🪐</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; font-size: 1.1em; color: #555;'>Güneş sistemi cisimlerinin yörünge dinamiklerini hesaplayın, efemeris tablolarını oluşturun ve tek tıkla akademik formatta PDF raporları elde edin.</p><hr>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; font-size: 2.4em; font-weight: 700;'>Otonom Gök Mekaniği Raporlayıcısı 🪐</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; font-size: 1.1em; opacity: 0.85; margin-top: 10px;'>Güneş sistemi cisimlerinin yörünge dinamiklerini hesaplayın, efemeris tablolarını oluşturun ve tek tıkla akademik formatta PDF raporları elde edin.</div><hr>", unsafe_allow_html=True)
 
 # Buton rengini #008b8b yapmak için CSS müdahalesi
 st.markdown("""
@@ -242,7 +242,7 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 if st.session_state.secim is None:
-    st.markdown("<br><h3 style='text-align: center; color: #2c3e50; font-weight: 600;'>Hangi yöntemle rapor oluşturmak istersiniz?</h3><br>", unsafe_allow_html=True)
+    st.markdown("<br><div style='text-align: center; font-size: 1.4em; font-weight: 600;'>Hangi yöntemle rapor oluşturmak istersiniz?</div><br>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
         if st.button("🛰️\n\nCİSİM İSMİ İLE\n\n(Otomatik JPL Bağlantısı)\n\n", use_container_width=True, type="primary"):
