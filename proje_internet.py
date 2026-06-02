@@ -123,6 +123,26 @@ def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
     if isinstance(X_suan, np.ndarray):
         X_suan, Y_suan, Z_suan = X_suan[0], Y_suan[0], Z_suan[0]
         
+    fig = go.F# --- YÖRÜNGE AÇILARI VE DÜĞÜM ÇİZGİSİ (Geometrik Görselleştirme) ---
+    R_arc = a * 0.35  # Yayların yarıçapı yörüngeye oranla dinamik belirlenir
+    
+    # 1. Ω Yayı (Ekliptik Düzlemde, X ekseninden Düğüm Çizgisine)
+    th_W = np.linspace(0, np.radians(W), 50)
+    X_W, Y_W, Z_W = R_arc * np.cos(th_W), R_arc * np.sin(th_W), np.zeros_like(th_W)
+    Nx, Ny, Nz = X_W[-1], Y_W[-1], 0 # Düğüm Çizgisinin uç noktası
+    
+    # 2. ω Yayı (Yörünge Düzleminde, Düğüm Çizgisinden Enberiye)
+    th_w = np.linspace(-np.radians(w), 0, 50)
+    X_w, Y_w, Z_w = uzay_3d_donusum(R_arc * np.cos(th_w), R_arc * np.sin(th_w), i, W, w)
+    
+    # 3. i Yayı (Eğiklik - Düğüm çizgisine 90 derece dik konumda, Ekliptikten Yörüngeye)
+    x_i_nokta = R_arc * 1.2 * np.cos(-np.radians(w) + np.pi/2)
+    y_i_nokta = R_arc * 1.2 * np.sin(-np.radians(w) + np.pi/2)
+    X_i, Y_i, Z_i = [], [], []
+    for i_temp in np.linspace(0, i, 50):
+        xt, yt, zt = uzay_3d_donusum(x_i_nokta, y_i_nokta, i_temp, W, w)
+        X_i.append(xt); Y_i.append(yt); Z_i.append(zt)
+
     fig = go.Figure()
     
     # 1. Güneş ve Ana Cisim
@@ -130,9 +150,25 @@ def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
     fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', line=dict(color='#1a2940', width=5), name=f'{cisim_ismi} Yörüngesi'))
     fig.add_trace(go.Scatter3d(x=[X_suan], y=[Y_suan], z=[Z_suan], mode='markers', marker=dict(size=8, color='#e74c3c', line=dict(color='white', width=1)), name=f'{cisim_ismi} (Şu An)'))
     
-    # 2. Vektörler
+    # 2. Referans Eksenleri ve Vektörler
+    fig.add_trace(go.Scatter3d(x=[0, max(X_g)*1.1], y=[0, 0], z=[0, 0], mode='lines', line=dict(color='gray', width=2), name='X Ekseni (Koç Noktası)'))
+    fig.add_trace(go.Scatter3d(x=[0, Nx*1.5], y=[0, Ny*1.5], z=[0, 0], mode='lines+text', line=dict(color='#8e44ad', width=3, dash='dashdot'), text=['', 'Düğüm Çizgisi (N)'], textposition='top center', textfont=dict(size=10, color='#8e44ad'), name='Düğüm Çizgisi'))
+    
     fig.add_trace(go.Scatter3d(x=[0, X_g[idx_enberi]], y=[0, Y_g[idx_enberi]], z=[0, Z_g[idx_enberi]], mode='lines+text', line=dict(color='#1e8449', width=2, dash='dash'), text=['', f'Enberi: {r_g[idx_enberi]:.2f} AB'], textposition='top center', textfont=dict(size=10, color='#1e8449'), name='Enberi Vektörü'))
     fig.add_trace(go.Scatter3d(x=[0, X_g[idx_enote]], y=[0, Y_g[idx_enote]], z=[0, Z_g[idx_enote]], mode='lines+text', line=dict(color='#7d3c98', width=2, dash='dash'), text=['', f'Enöte: {r_g[idx_enote]:.2f} AB'], textposition='top center', textfont=dict(size=10, color='#7d3c98'), name='Enöte Vektörü'))
+
+    # 3. Yörünge Elemanları (Yaylar)
+    mid_W = len(X_W)//2
+    fig.add_trace(go.Scatter3d(x=X_W, y=Y_W, z=Z_W, mode='lines', line=dict(color='#2ecc71', width=4), name='Ω (Çıkış Düğümü Boylamı)'))
+    fig.add_trace(go.Scatter3d(x=[X_W[mid_W]], y=[Y_W[mid_W]], z=[Z_W[mid_W]], mode='text', text=['Ω'], textfont=dict(size=14, color='#2ecc71'), showlegend=False))
+    
+    mid_w = len(X_w)//2
+    fig.add_trace(go.Scatter3d(x=X_w, y=Y_w, z=Z_w, mode='lines', line=dict(color='#e67e22', width=4), name='ω (Enberi Argümanı)'))
+    fig.add_trace(go.Scatter3d(x=[X_w[mid_w]], y=[Y_w[mid_w]], z=[Z_w[mid_w]], mode='text', text=['ω'], textfont=dict(size=14, color='#e67e22'), showlegend=False))
+    
+    mid_i = len(X_i)//2
+    fig.add_trace(go.Scatter3d(x=X_i, y=Y_i, z=Z_i, mode='lines', line=dict(color='#3498db', width=4), name='i (Eğiklik)'))
+    fig.add_trace(go.Scatter3d(x=[X_i[mid_i]], y=[Y_i[mid_i]], z=[Z_i[mid_i]], mode='text', text=['i'], textfont=dict(size=14, color='#3498db'), showlegend=False))
 
     # 3. Dünya (Yörünge ve Şu Anki Konum)
     _, _, _, _, x_e, y_e = hesapla(np.linspace(0, 365.25, 300), 1.0, 0.0167, 365.25, 0)
