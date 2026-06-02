@@ -146,8 +146,19 @@ def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
     fig = go.Figure()
     
     # 1. Güneş ve Ana Cisim
+# DEĞİŞTİRİLECEK SATIRLAR
     fig.add_trace(go.Scatter3d(x=[0], y=[0], z=[0], mode='markers', marker=dict(size=12, color='#f39c12', line=dict(color='white', width=1.5)), name='Güneş', hoverinfo='name'))
     fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', line=dict(color='#1a2940', width=5), name=f'{cisim_ismi} Yörüngesi'))
+    
+    # --- YÖRÜNGE DÜZLEMİNİ "CAM" GİBİ DOLDURMA (Görsel Derinlik) ---
+    x_mesh = [0] + list(X_g)
+    y_mesh = [0] + list(Y_g)
+    z_mesh = [0] + list(Z_g)
+    i_mesh = [0] * (len(X_g) - 1)
+    j_mesh = list(range(1, len(X_g)))
+    k_mesh = list(range(2, len(X_g) + 1))
+    fig.add_trace(go.Mesh3d(x=x_mesh, y=y_mesh, z=z_mesh, i=i_mesh, j=j_mesh, k=k_mesh, color='#3498db', opacity=0.15, name='Yörünge Düzlemi', hoverinfo='skip'))
+    
     fig.add_trace(go.Scatter3d(x=[X_suan], y=[Y_suan], z=[Z_suan], mode='markers', marker=dict(size=8, color='#e74c3c', line=dict(color='white', width=1)), name=f'{cisim_ismi} (Şu An)'))
     
     # 2. Referans Eksenleri ve Vektörler
