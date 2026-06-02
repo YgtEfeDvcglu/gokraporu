@@ -123,7 +123,7 @@ def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
     if isinstance(X_suan, np.ndarray):
         X_suan, Y_suan, Z_suan = X_suan[0], Y_suan[0], Z_suan[0]
         
-    fig = go.F# --- YÖRÜNGE AÇILARI VE DÜĞÜM ÇİZGİSİ (Geometrik Görselleştirme) ---
+    # --- YÖRÜNGE AÇILARI VE DÜĞÜM ÇİZGİSİ (Geometrik Görselleştirme) ---
     R_arc = a * 0.35  # Yayların yarıçapı yörüngeye oranla dinamik belirlenir
     
     # 1. Ω Yayı (Ekliptik Düzlemde, X ekseninden Düğüm Çizgisine)
@@ -170,7 +170,7 @@ def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
     fig.add_trace(go.Scatter3d(x=X_i, y=Y_i, z=Z_i, mode='lines', line=dict(color='#3498db', width=4), name='i (Eğiklik)'))
     fig.add_trace(go.Scatter3d(x=[X_i[mid_i]], y=[Y_i[mid_i]], z=[Z_i[mid_i]], mode='text', text=['i'], textfont=dict(size=14, color='#3498db'), showlegend=False))
 
-    # 3. Dünya (Yörünge ve Şu Anki Konum)
+    # 4. Dünya (Yörünge ve Şu Anki Konum)
     _, _, _, _, x_e, y_e = hesapla(np.linspace(0, 365.25, 300), 1.0, 0.0167, 365.25, 0)
     Xe, Ye, Ze = uzay_3d_donusum(x_e, y_e, 0.0, 0.0, 102.9)
     fig.add_trace(go.Scatter3d(x=Xe, y=Ye, z=Ze, mode='lines', line=dict(color='#2980b9', width=2, dash='dot'), name='Dünya Yörüngesi', hoverinfo='name'))
@@ -180,7 +180,7 @@ def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
     if isinstance(Xe_suan, np.ndarray): Xe_suan, Ye_suan, Ze_suan = Xe_suan[0], Ye_suan[0], Ze_suan[0]
     fig.add_trace(go.Scatter3d(x=[Xe_suan], y=[Ye_suan], z=[Ze_suan], mode='markers', marker=dict(size=5, color='#3498db', line=dict(color='white', width=1)), name='Dünya (Şu An)'))
 
-    # 4. Jüpiter (Yörünge ve Şu Anki Konum)
+    # 5. Jüpiter (Yörünge ve Şu Anki Konum)
     _, _, _, _, x_j, y_j = hesapla(np.linspace(0, 4332.59, 500), 5.204, 0.0489, 4332.59, 0)
     Xj, Yj, Zj = uzay_3d_donusum(x_j, y_j, 1.30, 100.5, 273.8)
     fig.add_trace(go.Scatter3d(x=Xj, y=Yj, z=Zj, mode='lines', line=dict(color='#c0392b', width=2, dash='dot'), name='Jüpiter Yörüngesi', hoverinfo='name'))
@@ -190,7 +190,7 @@ def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
     if isinstance(Xj_suan, np.ndarray): Xj_suan, Yj_suan, Zj_suan = Xj_suan[0], Yj_suan[0], Zj_suan[0]
     fig.add_trace(go.Scatter3d(x=[Xj_suan], y=[Yj_suan], z=[Zj_suan], mode='markers', marker=dict(size=7, color='#e67e22', line=dict(color='white', width=1)), name='Jüpiter (Şu An)'))
 
-    # 5. Ekliptik Düzlem
+    # 6. Ekliptik Düzlem
     xy_limit = max(abs(X_g).max(), abs(Y_g).max(), 5.5) * 1.05
     grid_val = np.linspace(-xy_limit, xy_limit, 2)
     xg, yg = np.meshgrid(grid_val, grid_val)
