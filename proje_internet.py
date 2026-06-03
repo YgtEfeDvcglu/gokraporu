@@ -378,10 +378,10 @@ def plotly_3d_ciz_jenerik(a, e, i, W, w, nu, mu, cisim_ismi, merkez_ismi="Dünya
     fig.add_trace(go.Scatter3d(x=[X_enb], y=[Y_enb], z=[Z_enb], mode='text', text=['Π'], textfont=dict(size=14, color='#f39c12'), textposition='top center', showlegend=False, hoverinfo='skip'))
 
     fig.add_trace(go.Scatter3d(x=[0, R_vec[0]], y=[0, R_vec[1]], z=[0, R_vec[2]], mode='lines', line=dict(color=renk_r, width=3, dash='dash'), name='Konum Vektörü (r)'))
-    fig.add_trace(go.Scatter3d(x=[R_vec[0]], y=[R_vec[1]], z=[R_vec[2]], mode='text', text=['r⃗'], textfont=dict(size=14, color=renk_r), textposition='bottom right', showlegend=False, hoverinfo='skip'))
+    fig.add_trace(go.Scatter3d(x=[R_vec[0]], y=[R_vec[1]], z=[R_vec[2]], mode='text', text=['r'], textfont=dict(size=14, color=renk_r), textposition='bottom right', showlegend=False, hoverinfo='skip'))
 
     fig.add_trace(go.Scatter3d(x=[R_vec[0], R_vec[0] + V_vec[0]*V_scale], y=[R_vec[1], R_vec[1] + V_vec[1]*V_scale], z=[R_vec[2], R_vec[2] + V_vec[2]*V_scale], mode='lines', line=dict(color=renk_v, width=4), name='Hız Vektörü (v)'))
-    fig.add_trace(go.Scatter3d(x=[R_vec[0] + V_vec[0]*V_scale], y=[R_vec[1] + V_vec[1]*V_scale], z=[R_vec[2] + V_vec[2]*V_scale], mode='text', text=['V⃗'], textfont=dict(size=14, color=renk_v), textposition='top right', showlegend=False, hoverinfo='skip'))
+    fig.add_trace(go.Scatter3d(x=[R_vec[0] + V_vec[0]*V_scale], y=[R_vec[1] + V_vec[1]*V_scale], z=[R_vec[2] + V_vec[2]*V_scale], mode='text', text=['V'], textfont=dict(size=14, color=renk_v), textposition='top right', showlegend=False, hoverinfo='skip'))
 
     fig.add_trace(go.Scatter3d(x=[X_suan], y=[Y_suan], z=[Z_suan], mode='markers', marker=dict(size=7, color=renk_v), name='Cismin Konumu', hoverinfo='skip'))
     
