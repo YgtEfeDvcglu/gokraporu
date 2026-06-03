@@ -333,14 +333,36 @@ st.markdown("""
     """, unsafe_allow_html=True)
 
 if st.session_state.secim is None:
-    st.markdown("<br><div style='text-align: center; font-size: 1.4em; font-weight: 600;'>Hangi yöntemle rapor oluşturmak istersiniz?</div><br>", unsafe_allow_html=True)
-    col1, col2 = st.columns(2)
+    st.markdown("<br><div style='text-align: center; font-size: 1.4em; font-weight: 600;'>Referans Sisteminizi ve Merkez Cismi Seçin</div><br>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns(3)
     with col1:
-        if st.button("🛰️\n\nGÖK CİSMİNİN İSMİYLE\n\n(Otomatik JPL Bağlantısı)\n\n", use_container_width=True, type="primary"):
-            st.session_state.secim = "jpl"
+        if st.button("☀️\n\nGÜNEŞ MERKEZLİ\n\n(Heliosentrik - Ekliptik)\n\n", use_container_width=True, type="primary"):
+            st.session_state.secim = "gunes_secim"
+            st.session_state.merkez_tipi = "gunes"
             st.rerun()
     with col2:
-        if st.button("🧮\n\nPARAMETRELERLE\n\n(Manuel Giriş)\n\n", use_container_width=True, type="primary"):
+        if st.button("🌍\n\nDÜNYA MERKEZLİ\n\n(Jeosentrik - Ekvatoryal)\n\n", use_container_width=True, type="primary"):
+            st.session_state.secim = "manuel"
+            st.session_state.merkez_tipi = "dunya"
+            st.rerun()
+    with col3:
+        if st.button("🪐\n\nÖZEL CİSİM MERKEZLİ\n\n(Serbest Parametre)\n\n", use_container_width=True, type="primary"):
+            st.session_state.secim = "manuel"
+            st.session_state.merkez_tipi = "ozel"
+            st.rerun()
+
+if st.session_state.secim == "gunes_secim":
+    if st.button("← Ana Menüye Dön"):
+        st.session_state.secim = None
+        st.rerun()
+    st.markdown("<div style='text-align: center; font-size: 1.2em; margin-bottom: 20px;'>Veri giriş yöntemini seçin:</div>", unsafe_allow_html=True)
+    alt_col1, alt_col2 = st.columns(2)
+    with alt_col1:
+        if st.button("📡 JPL Veritabanından Otomatik Çek"):
+            st.session_state.secim = "jpl"
+            st.rerun()
+    with alt_col2:
+        if st.button("✍️ Manuel Parametre Girişi"):
             st.session_state.secim = "manuel"
             st.rerun()
 
