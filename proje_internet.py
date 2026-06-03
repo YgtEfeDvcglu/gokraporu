@@ -123,66 +123,18 @@ def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
     if isinstance(X_suan, np.ndarray):
         X_suan, Y_suan, Z_suan = X_suan[0], Y_suan[0], Z_suan[0]
         
-    # --- YÖRÜNGE AÇILARI VE DÜĞÜM ÇİZGİSİ (Geometrik Görselleştirme) ---
-    R_arc = a * 0.12  # Yayların yarıçapını merkeze çok daha yakın tutuyoruz (Görsel kirliliği önler)
-    
-    # 1. Ω Yayı (Ekliptik Düzlemde, X ekseninden Düğüm Çizgisine)
-    th_W = np.linspace(0, np.radians(W), 50)
-    X_W, Y_W, Z_W = R_arc * np.cos(th_W), R_arc * np.sin(th_W), np.zeros_like(th_W)
-    Nx, Ny, Nz = X_W[-1], Y_W[-1], 0 # Düğüm Çizgisinin uç noktası
-    
-    # 2. ω Yayı (Yörünge Düzleminde, Düğüm Çizgisinden Enberiye)
-    th_w = np.linspace(-np.radians(w), 0, 50)
-    X_w, Y_w, Z_w = uzay_3d_donusum(R_arc * np.cos(th_w), R_arc * np.sin(th_w), i, W, w)
-    
-    # 3. i Yayı (Eğiklik - Düğüm çizgisine 90 derece dik konumda, Ekliptikten Yörüngeye)
-    x_i_nokta = R_arc * 1.2 * np.cos(-np.radians(w) + np.pi/2)
-    y_i_nokta = R_arc * 1.2 * np.sin(-np.radians(w) + np.pi/2)
-    X_i, Y_i, Z_i = [], [], []
-    for i_temp in np.linspace(0, i, 50):
-        xt, yt, zt = uzay_3d_donusum(x_i_nokta, y_i_nokta, i_temp, W, w)
-        X_i.append(xt); Y_i.append(yt); Z_i.append(zt)
-
     fig = go.Figure()
     
     # 1. Güneş ve Ana Cisim
-# DEĞİŞTİRİLECEK SATIRLAR
     fig.add_trace(go.Scatter3d(x=[0], y=[0], z=[0], mode='markers', marker=dict(size=12, color='#f39c12', line=dict(color='white', width=1.5)), name='Güneş', hoverinfo='name'))
     fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', line=dict(color='#1a2940', width=5), name=f'{cisim_ismi} Yörüngesi'))
-    
-    # --- YÖRÜNGE DÜZLEMİNİ "CAM" GİBİ DOLDURMA (Görsel Derinlik) ---
-    x_mesh = [0] + list(X_g)
-    y_mesh = [0] + list(Y_g)
-    z_mesh = [0] + list(Z_g)
-    i_mesh = [0] * (len(X_g) - 1)
-    j_mesh = list(range(1, len(X_g)))
-    k_mesh = list(range(2, len(X_g) + 1))
-    fig.add_trace(go.Mesh3d(x=x_mesh, y=y_mesh, z=z_mesh, i=i_mesh, j=j_mesh, k=k_mesh, color='#3498db', opacity=0.15, name='Yörünge Düzlemi', hoverinfo='skip'))
-    
     fig.add_trace(go.Scatter3d(x=[X_suan], y=[Y_suan], z=[Z_suan], mode='markers', marker=dict(size=8, color='#e74c3c', line=dict(color='white', width=1)), name=f'{cisim_ismi} (Şu An)'))
     
-    # 2. Referans Eksenleri ve Vektörler
-    fig.add_trace(go.Scatter3d(x=[0, max(X_g)*1.1], y=[0, 0], z=[0, 0], mode='lines', line=dict(color='gray', width=2), name='X Ekseni (Koç Noktası)'))
-    fig.add_trace(go.Scatter3d(x=[0, Nx*3.5], y=[0, Ny*3.5], z=[0, 0], mode='lines+text', line=dict(color='#8e44ad', width=3, dash='dashdot'), text=['', 'Düğüm Çizgisi (N)'], textposition='top center', textfont=dict(size=10, color='#8e44ad'), name='Düğüm Çizgisi'))
-    
+    # 2. Vektörler
     fig.add_trace(go.Scatter3d(x=[0, X_g[idx_enberi]], y=[0, Y_g[idx_enberi]], z=[0, Z_g[idx_enberi]], mode='lines+text', line=dict(color='#1e8449', width=2, dash='dash'), text=['', f'Enberi: {r_g[idx_enberi]:.2f} AB'], textposition='top center', textfont=dict(size=10, color='#1e8449'), name='Enberi Vektörü'))
     fig.add_trace(go.Scatter3d(x=[0, X_g[idx_enote]], y=[0, Y_g[idx_enote]], z=[0, Z_g[idx_enote]], mode='lines+text', line=dict(color='#7d3c98', width=2, dash='dash'), text=['', f'Enöte: {r_g[idx_enote]:.2f} AB'], textposition='top center', textfont=dict(size=10, color='#7d3c98'), name='Enöte Vektörü'))
 
-    # 3. Yörünge Elemanları (Yaylar)
-    # Metin koordinatlarını yayların dışına itmek için * 1.15 ile çarpıyoruz
-    mid_W = len(X_W)//2
-    fig.add_trace(go.Scatter3d(x=X_W, y=Y_W, z=Z_W, mode='lines', line=dict(color='#2ecc71', width=4), name='Ω (Çıkış Düğümü Boylamı)'))
-    fig.add_trace(go.Scatter3d(x=[X_W[mid_W]*1.15], y=[Y_W[mid_W]*1.15], z=[Z_W[mid_W]*1.15], mode='text', text=['Ω'], textfont=dict(size=14, color='#2ecc71'), showlegend=False))
-    
-    mid_w = len(X_w)//2
-    fig.add_trace(go.Scatter3d(x=X_w, y=Y_w, z=Z_w, mode='lines', line=dict(color='#e67e22', width=4), name='ω (Enberi Argümanı)'))
-    fig.add_trace(go.Scatter3d(x=[X_w[mid_w]*1.15], y=[Y_w[mid_w]*1.15], z=[Z_w[mid_w]*1.15], mode='text', text=['ω'], textfont=dict(size=14, color='#e67e22'), showlegend=False))
-    
-    mid_i = len(X_i)//2
-    fig.add_trace(go.Scatter3d(x=X_i, y=Y_i, z=Z_i, mode='lines', line=dict(color='#3498db', width=4), name='i (Eğiklik)'))
-    fig.add_trace(go.Scatter3d(x=[X_i[mid_i]*1.15], y=[Y_i[mid_i]*1.15], z=[Z_i[mid_i]*1.15], mode='text', text=['i'], textfont=dict(size=14, color='#3498db'), showlegend=False))
-
-    # 4. Dünya (Yörünge ve Şu Anki Konum)
+    # 3. Dünya (Yörünge ve Şu Anki Konum)
     _, _, _, _, x_e, y_e = hesapla(np.linspace(0, 365.25, 300), 1.0, 0.0167, 365.25, 0)
     Xe, Ye, Ze = uzay_3d_donusum(x_e, y_e, 0.0, 0.0, 102.9)
     fig.add_trace(go.Scatter3d(x=Xe, y=Ye, z=Ze, mode='lines', line=dict(color='#2980b9', width=2, dash='dot'), name='Dünya Yörüngesi', hoverinfo='name'))
@@ -192,7 +144,7 @@ def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
     if isinstance(Xe_suan, np.ndarray): Xe_suan, Ye_suan, Ze_suan = Xe_suan[0], Ye_suan[0], Ze_suan[0]
     fig.add_trace(go.Scatter3d(x=[Xe_suan], y=[Ye_suan], z=[Ze_suan], mode='markers', marker=dict(size=5, color='#3498db', line=dict(color='white', width=1)), name='Dünya (Şu An)'))
 
-    # 5. Jüpiter (Yörünge ve Şu Anki Konum)
+    # 4. Jüpiter (Yörünge ve Şu Anki Konum)
     _, _, _, _, x_j, y_j = hesapla(np.linspace(0, 4332.59, 500), 5.204, 0.0489, 4332.59, 0)
     Xj, Yj, Zj = uzay_3d_donusum(x_j, y_j, 1.30, 100.5, 273.8)
     fig.add_trace(go.Scatter3d(x=Xj, y=Yj, z=Zj, mode='lines', line=dict(color='#c0392b', width=2, dash='dot'), name='Jüpiter Yörüngesi', hoverinfo='name'))
@@ -202,7 +154,7 @@ def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
     if isinstance(Xj_suan, np.ndarray): Xj_suan, Yj_suan, Zj_suan = Xj_suan[0], Yj_suan[0], Zj_suan[0]
     fig.add_trace(go.Scatter3d(x=[Xj_suan], y=[Yj_suan], z=[Zj_suan], mode='markers', marker=dict(size=7, color='#e67e22', line=dict(color='white', width=1)), name='Jüpiter (Şu An)'))
 
-    # 6. Ekliptik Düzlem
+    # 5. Ekliptik Düzlem
     xy_limit = max(abs(X_g).max(), abs(Y_g).max(), 5.5) * 1.05
     grid_val = np.linspace(-xy_limit, xy_limit, 2)
     xg, yg = np.meshgrid(grid_val, grid_val)
