@@ -507,7 +507,7 @@ elif st.session_state.secim == "jenerik_manuel":
     tab_vektor, tab_eleman = st.tabs(["🚀 Durum Vektörleri (r, v) Gireceğim", "📐 Yörünge Elemanları Gireceğim"])
     
     with tab_vektor:
-        st.markdown("Konum ve hız bileşenlerini girerek Kepler açılarını hesaplayın.")
+        st.markdown("**Konum ve hız bileşenlerini girerek Kepler açılarını hesaplayın.**")
         col_r1, col_r2, col_r3 = st.columns(3)
         rx = col_r1.number_input("X Konumu [km]", value=-6045.0)
         ry = col_r2.number_input("Y Konumu [km]", value=-3490.0)
@@ -526,7 +526,7 @@ elif st.session_state.secim == "jenerik_manuel":
                 st.session_state.aktif_fig = plotly_3d_ciz_jenerik(a_c, e_c, i_c, W_c, w_c, nu_c, mu_val, "Uydu/Cisim", merkez_isim_etiket)
 
     with tab_eleman:
-        st.markdown("Kepler elemanlarını girerek durum vektörlerini hesaplayın.")
+        st.markdown("**Kepler elemanlarını girerek durum vektörlerini hesaplayın.**")
         col_e1, col_e2, col_e3 = st.columns(3)
         a_in = col_e1.number_input("Yarı-Büyük Eksen (a) [km]", value=8788.0)
         e_in = col_e2.number_input("Dışmerkezlik (e)", value=0.1712, format="%.4f")
