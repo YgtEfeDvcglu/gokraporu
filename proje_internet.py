@@ -552,101 +552,247 @@ def pdf_olustur(a, e, P, tau, cisim_ismi):
     pdf_buffer.seek(0)
     return pdf_buffer
 def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_ismi, mod="vektor"):
-    C_BASLIK, C_ALT, C_KOYU = '#1a2940', '#2e6da4', '#111111'
+    C_BASLIK, C_ALT = '#1a2940', '#2e6da4'
     FW, FH = 8.27, 11.69
     pdf_buffer = io.BytesIO()
-    
-    # Fiziksel hesaplamalar
+
+    # ── Fiziksel hesaplamalar ──
     r_mag = np.linalg.norm(R_vec)
     v_mag = np.linalg.norm(V_vec)
-    vr = np.dot(R_vec, V_vec) / r_mag
+    vr    = np.dot(R_vec, V_vec) / r_mag
     H_vec = np.cross(R_vec, V_vec)
     h_mag = np.linalg.norm(H_vec)
-    K_vec = np.array([0, 0, 1])
+    K_vec = np.array([0.0, 0.0, 1.0])
     N_vec = np.cross(K_vec, H_vec)
     n_mag = np.linalg.norm(N_vec)
     E_vec = (1/mu) * ((v_mag**2 - mu/r_mag)*R_vec - r_mag*vr*V_vec)
+    e_mag = np.linalg.norm(E_vec)
     epsilon = (v_mag**2 / 2) - (mu / r_mag)
-    P = (2 * np.pi * np.sqrt(abs(a)**3 / mu)) if e < 1 else np.inf
+    P_sn  = (2*np.pi*np.sqrt(abs(a)**3 / mu)) if e < 1 else np.inf
 
     with PdfPages(pdf_buffer) as pdf:
-        fig1 = plt.figure(figsize=(FW, FH))
-        ax1 = fig1.add_axes([0.08, 0.05, 0.84, 0.90]); ax1.axis('off')
-        
-        def yaz(y, metin, fs=10, bold=False, renk=C_KOYU):
-            ax1.text(0.0, y, metin, transform=ax1.transAxes, fontsize=fs, fontweight='bold' if bold else 'normal', color=renk, va='top', ha='left')
-        
-        ax1.text(0.5, 1.0, "GÖK MEKANİĞİ - ÇÖZÜM RAPORU", transform=ax1.transAxes, fontsize=14, fontweight='bold', color=C_BASLIK, ha='center', va='top')
-        yp = 0.94
-        
-        yaz(yp, "ADIM ADIM HESAPLAMALAR:", bold=True, fs=11, renk=C_ALT); yp -= 0.05
-        # LaTeX karmaşasını temizleyip sadece metin ve basit formül kullandım
-        yaz(yp, f"Verilen mu: {mu} km^3/s^2", fs=9); yp -= 0.03
-        yaz(yp, f"Durum Vektoru R: [{R_vec[0]:.2f}, {R_vec[1]:.2f}, {R_vec[2]:.2f}] km", fs=9); yp -= 0.03
-        yaz(yp, f"Durum Vektoru V: [{V_vec[0]:.4f}, {V_vec[1]:.4f}, {V_vec[2]:.4f}] km/s", fs=9); yp -= 0.05
-        
-        yaz(yp, "Momentum Vektoru H (Capraz Carpim sonucu):", bold=True, fs=9); yp -= 0.03
-        matris_h = f"Hx = {H_vec[0]:.4f}, Hy = {H_vec[1]:.4f}, Hz = {H_vec[2]:.4f}"
-        yaz(yp, matris_h, fs=9, renk=C_ALT); yp -= 0.05
-        
-        yaz(yp, "Yorunge Elemanlari Sonuc:", bold=True, fs=9); yp -= 0.03
-        yaz(yp, f"a={a:.2f} km, e={e:.5f}, i={i:.2f} derece, W={W:.2f} derece, w={w:.2f} derece", fs=9)
-        
-        pdf.savefig(fig1, dpi=200); plt.close(fig1)
+        fig = plt.figure(figsize=(FW, FH))
+        ax  = fig.add_axes([0.08, 0.05, 0.84, 0.91])
+        ax.axis('off')
+        ax.set_xlim(0, 1); ax.set_ylim(0, 1)
 
-        # ==========================================
-        # SAYFA 2: GRAFİK VE FİZİKSEL ÖZET
-        # ==========================================
+        def pt2y(pt): return (pt / 72) / (0.91 * FH)
+        def yaz(x, y, s, fs=10, bold=False, renk='#111111', ha='left'):
+            ax.text(x, y, s, transform=ax.transAxes, fontsize=fs,
+                    fontweight='bold' if bold else 'normal',
+                    color=renk, ha=ha, va='top')
+        def cizgi(y, renk='#cccccc', lw=0.7):
+            ax.plot([0, 1], [y, y], transform=ax.transAxes, color=renk, lw=lw)
+
+        yp = 0.995
+
+        # ── Başlık ──
+        yaz(0.5, yp, "GÖK MEKANİĞİ - ADIM ADIM ÇÖZÜM RAPORU",
+            fs=13, bold=True, renk=C_BASLIK, ha='center')
+        yp -= pt2y(13) + pt2y(4)
+        cizgi(yp, renk=C_BASLIK, lw=1.2)
+        yp -= pt2y(5)
+
+        # ── Problem başlığı ──
+        if mod == "vektor":
+            yaz(0.0, yp, "PROBLEM: Verilen Durum Vektörlerinden Yörünge Elemanlarının Bulunması",
+                fs=10, bold=True, renk=C_ALT)
+        else:
+            yaz(0.0, yp, "PROBLEM: Verilen Yörünge Elemanlarından Durum Vektörlerinin Bulunması",
+                fs=10, bold=True, renk=C_ALT)
+        yp -= pt2y(10) + pt2y(6)
+
+        # ── VERİLENLER (kalın başlık, altına veriler) ──
+        yaz(0.0, yp, "Verilenler:", fs=10, bold=True, renk='#111111')
+        yp -= pt2y(10) + pt2y(3)
+        yaz(0.02, yp, f"μ = {mu} km³/s²", fs=9.5)
+        yp -= pt2y(9.5) + pt2y(2)
+        yaz(0.02, yp,
+            f"r⃗  =  {R_vec[0]:.2f} î  +  {R_vec[1]:.2f} ĵ  +  {R_vec[2]:.2f} k̂   (km)",
+            fs=9.5)
+        yp -= pt2y(9.5) + pt2y(2)
+        yaz(0.02, yp,
+            f"v⃗  =  {V_vec[0]:.4f} î  +  {V_vec[1]:.4f} ĵ  +  {V_vec[2]:.4f} k̂   (km/s)",
+            fs=9.5)
+        yp -= pt2y(9.5) + pt2y(8)
+        cizgi(yp, renk='#dddddd')
+        yp -= pt2y(6)
+
+        # ── ADIM 1 ──
+        yaz(0.0, yp, "ADIM 1: Skaler Büyüklükler ve Radyal Hız", fs=10, bold=True, renk='#111111')
+        yp -= pt2y(10) + pt2y(4)
+        yaz(0.02, yp, f"r  = |r⃗|  = √(rx² + ry² + rz²)  = {r_mag:.4f} km", fs=9.5)
+        yp -= pt2y(9.5) + pt2y(3)
+        yaz(0.02, yp, f"v  = |v⃗|  = √(vx² + vy² + vz²)  = {v_mag:.4f} km/s", fs=9.5)
+        yp -= pt2y(9.5) + pt2y(3)
+        yaz(0.02, yp, f"vr = (r⃗ · v⃗) / r  =  {vr:.4f} km/s"
+            + ("   → > 0: Enberi'den uzaklaşıyor" if vr >= 0 else "   → < 0: Enberi'ye yaklaşıyor"),
+            fs=9.5)
+        yp -= pt2y(9.5) + pt2y(8)
+
+        # ── ADIM 2 ──
+        yaz(0.0, yp, "ADIM 2: Özgül Açısal Momentum Vektörü", fs=10, bold=True, renk='#111111')
+        yp -= pt2y(10) + pt2y(4)
+
+        # Matris gösterimi
+        yaz(0.02, yp, "h⃗  = r⃗ × v⃗  =", fs=9.5)
+        # Determinant çizgisi — 3 sütun: î  ĵ  k̂ / rx ry rz / vx vy vz
+        mat_x = 0.30
+        mat_satir = [
+            ("î",            "ĵ",            "k̂"),
+            (f"{R_vec[0]:.2f}", f"{R_vec[1]:.2f}", f"{R_vec[2]:.2f}"),
+            (f"{V_vec[0]:.4f}", f"{V_vec[1]:.4f}", f"{V_vec[2]:.4f}"),
+        ]
+        sutun_x = [mat_x, mat_x+0.14, mat_x+0.28]
+        # Dikey çizgiler (sol ve sağ determinant çubuğu)
+        bar_x0, bar_x1 = mat_x - 0.015, mat_x + 0.42
+        for row_idx, row_vals in enumerate(mat_satir):
+            row_y = yp - row_idx * pt2y(11)
+            for col_idx, val in enumerate(row_vals):
+                ax.text(sutun_x[col_idx], row_y, val,
+                        transform=ax.transAxes, fontsize=9,
+                        ha='center', va='top', color='#111')
+        mat_top = yp + pt2y(2)
+        mat_bot = yp - 2 * pt2y(11) - pt2y(2)
+        ax.plot([bar_x0, bar_x0], [mat_bot, mat_top],
+                transform=ax.transAxes, color='#333', lw=1.0)
+        ax.plot([bar_x1, bar_x1], [mat_bot, mat_top],
+                transform=ax.transAxes, color='#333', lw=1.0)
+
+        yp -= 3 * pt2y(11) + pt2y(4)
+        yaz(0.02, yp,
+            f"h⃗  =  {H_vec[0]:.2f} î  +  {H_vec[1]:.2f} ĵ  +  {H_vec[2]:.2f} k̂   (km²/s)",
+            fs=9.5)
+        yp -= pt2y(9.5) + pt2y(3)
+        yaz(0.02, yp, f"h  = |h⃗|  = {h_mag:.2f} km²/s", fs=9.5)
+        yp -= pt2y(9.5) + pt2y(8)
+
+        # ── ADIM 3 ──
+        yaz(0.0, yp, "ADIM 3: Eğiklik (i) ve Çıkış Düğümü (Ω)", fs=10, bold=True, renk='#111111')
+        yp -= pt2y(10) + pt2y(4)
+        yaz(0.02, yp,
+            f"i  = arccos(hz / h)  = arccos({H_vec[2]:.2f} / {h_mag:.2f})  = {i:.4f}°",
+            fs=9.5)
+        yp -= pt2y(9.5) + pt2y(3)
+        yaz(0.02, yp,
+            f"N⃗  = k̂ × h⃗  =  [{N_vec[0]:.2f}, {N_vec[1]:.2f}, {N_vec[2]:.2f}]",
+            fs=9.5)
+        yp -= pt2y(9.5) + pt2y(3)
+        yaz(0.02, yp, f"N  = |N⃗|  = {n_mag:.2f}", fs=9.5)
+        yp -= pt2y(9.5) + pt2y(3)
+        omega_not = "  (Ny < 0 → Ω = 360° – Ω alındı)" if N_vec[1] < 0 else ""
+        yaz(0.02, yp,
+            f"Ω  = arccos(Nx / N)  = arccos({N_vec[0]:.2f} / {n_mag:.2f})  = {W:.4f}°" + omega_not,
+            fs=9.5)
+        yp -= pt2y(9.5) + pt2y(8)
+
+        # ── ADIM 4 ──
+        yaz(0.0, yp, "ADIM 4: Dışmerkezlik Vektörü (e) ve Enberi Argümanı (ω)", fs=10, bold=True, renk='#111111')
+        yp -= pt2y(10) + pt2y(4)
+        yaz(0.02, yp,
+            f"ẽ  = (1/μ)·[(v²–μ/r)·r⃗ – r·vr·v⃗]",
+            fs=9.5)
+        yp -= pt2y(9.5) + pt2y(3)
+        yaz(0.02, yp,
+            f"ẽ  =  [{E_vec[0]:.5f}, {E_vec[1]:.5f}, {E_vec[2]:.5f}]",
+            fs=9.5)
+        yp -= pt2y(9.5) + pt2y(3)
+        yaz(0.02, yp, f"e  = |ẽ|  = {e_mag:.5f}", fs=9.5)
+        yp -= pt2y(9.5) + pt2y(3)
+        ez_not = "  (ez < 0 → ω = 360° – ω alındı)" if E_vec[2] < 0 else ""
+        yaz(0.02, yp,
+            f"ω  = arccos(N⃗·ẽ / (N·e))  = {w:.4f}°" + ez_not,
+            fs=9.5)
+        yp -= pt2y(9.5) + pt2y(8)
+
+        # ── ADIM 5 ──
+        yaz(0.0, yp, "ADIM 5: Gerçek Anomali (ν) ve Yarı-Büyük Eksen (a)", fs=10, bold=True, renk='#111111')
+        yp -= pt2y(10) + pt2y(4)
+        vr_not = "  (vr < 0 → ν = 360° – ν alındı)" if vr < 0 else ""
+        yaz(0.02, yp,
+            f"ν  = arccos(ẽ·r⃗ / (e·r))  = {nu:.4f}°" + vr_not,
+            fs=9.5)
+        yp -= pt2y(9.5) + pt2y(3)
+        yaz(0.02, yp,
+            f"a  = h² / [μ·(1–e²)]  = {a:.2f} km",
+            fs=9.5)
+        yp -= pt2y(9.5) + pt2y(8)
+        cizgi(yp, renk='#dddddd')
+        yp -= pt2y(6)
+
+        # ── Sonuç kutusu ──
+        yaz(0.0, yp, "SONUÇ: Yörünge Elemanları", fs=10, bold=True, renk=C_ALT)
+        yp -= pt2y(10) + pt2y(4)
+        sonuclar = [
+            ("Yarı-büyük eksen",     f"a  = {a:.2f} km"),
+            ("Dışmerkezlik",         f"e  = {e_mag:.5f}"),
+            ("Eğiklik",              f"i  = {i:.4f}°"),
+            ("Çıkış Düğümü Boylamı", f"Ω  = {W:.4f}°"),
+            ("Enberi Argümanı",      f"ω  = {w:.4f}°"),
+            ("Gerçek Anomali",       f"ν  = {nu:.4f}°"),
+            ("Özgül Açısal Moment.", f"h  = {h_mag:.2f} km²/s"),
+            ("Özgül Mek. Enerji",    f"ε  = {epsilon:.4f} km²/s²"),
+        ]
+        if e < 1:
+            sonuclar.append(("Yörünge Periyodu",
+                             f"P  = {P_sn/3600:.4f} saat  ({P_sn/86400:.4f} gün)"))
+        for etiket, deger in sonuclar:
+            yaz(0.02, yp, f"▸  {etiket}:", fs=9.5, bold=True, renk='#333')
+            yaz(0.42, yp, deger, fs=9.5)
+            yp -= pt2y(9.5) + pt2y(3)
+
+        pdf.savefig(fig, dpi=200)
+        plt.close(fig)
+
+        # ── Sayfa 2: Perifokal Grafik ──
         fig2 = plt.figure(figsize=(FW, FH))
-        
-        # Fiziksel Özet Tablosu
-        ax_top = fig2.add_axes([0.1, 0.75, 0.8, 0.15])
-        ax_top.axis('off')
-        ax_top.text(0.0, 1.0, "EK: SİSTEMİN FİZİKSEL DURUM ÖZETİ", transform=ax_top.transAxes, fontsize=11, fontweight='bold', color=C_ALT)
-        fizik_metin = (
-            f"▸ Skaler Uzaklık (r) : {r_mag:.2f} km\n"
-            f"▸ Skaler Hız (v) : {v_mag:.4f} km/s\n"
-            f"▸ Özgül Açısal Momentum (h) : {h_mag:.2f} km²/s\n"
-            f"▸ Özgül Mekanik Enerji (ε) : {epsilon:.4f} km²/s²\n"
-            f"▸ Yörünge Periyodu (P) : {P/3600:.2f} saat ({P/86400:.2f} gün)" if e < 1 else f"▸ Yörünge Periyodu (P) : Açık Yörünge (Hiperbol/Parabol)"
-        )
-        ax_top.text(0.02, 0.7, fizik_metin, transform=ax_top.transAxes, fontsize=10, linespacing=1.8, va='top')
+        C_BASLIK2 = '#1a2940'
 
-        # Perifokal Grafik
-        ax_p = fig2.add_axes([0.15, 0.15, 0.7, 0.5])
-        ax_p.set_title("Perifokal Yörünge Düzlemi İzdüşümü (x̄ - ȳ)", fontsize=10, color=C_BASLIK, fontweight='bold', pad=15)
-        
-        nu_array = np.linspace(0, 2*np.pi, 500)
-        p_param = a * (1 - e**2)
-        r_array = p_param / (1 + e * np.cos(nu_array))
-        x_bar = r_array * np.cos(nu_array)
-        y_bar = r_array * np.sin(nu_array)
-        
-        ax_p.plot(x_bar, y_bar, color=C_BASLIK, lw=1.5, label='Yörünge', zorder=2)
-        
-        merkez_renk = '#3498db' if merkez_ismi == "Dünya" else '#9b59b6'
-        ax_p.scatter([0], [0], color=merkez_renk, s=120, zorder=5, label=merkez_ismi)
-        ax_p.scatter([p_param/(1+e)], [0], color='#f39c12', s=50, zorder=5, label='Enberi (Π)')
-        ax_p.plot([0, p_param/(1+e)], [0, 0], color='#f39c12', ls=':', lw=1.5, zorder=2)
-        
-        nu_rad = np.radians(nu)
-        x_nu = r_mag * np.cos(nu_rad)
-        y_nu = r_mag * np.sin(nu_rad)
-        ax_p.scatter([x_nu], [y_nu], color='#e74c3c', s=60, zorder=5, label='Cisim (ν)')
-        ax_p.plot([0, x_nu], [0, y_nu], color='#bdc3c7', ls='--', lw=1.5, zorder=1)
-        
-        vx_bar = -(mu / h_mag) * np.sin(nu_rad)
-        vy_bar = (mu / h_mag) * (e + np.cos(nu_rad))
-        scale = (a * 0.25) / v_mag 
-        ax_p.arrow(x_nu, y_nu, vx_bar*scale, vy_bar*scale, head_width=a*0.04, head_length=a*0.06, fc='#e74c3c', ec='#e74c3c', label='Hız Vektörü (v)', zorder=6)
-        
-        ax_p.set_aspect('equal', 'box')
-        ax_p.grid(True, linestyle=':', alpha=0.5)
-        ax_p.set_xlabel("x̄ (km)", fontsize=9)
-        ax_p.set_ylabel("ȳ (km)", fontsize=9)
-        handles, labels = ax_p.get_legend_handles_labels()
-        by_label = dict(zip(labels, handles))
-        ax_p.legend(by_label.values(), by_label.keys(), loc='upper right', fontsize=8, framealpha=0.9)
+        ax_top = fig2.add_axes([0.08, 0.78, 0.84, 0.18])
+        ax_top.axis('off')
+        ax_top.text(0.5, 1.0, "EK: SİSTEMİN FİZİKSEL DURUM ÖZETİ",
+                    transform=ax_top.transAxes, fontsize=11,
+                    fontweight='bold', color=C_ALT, ha='center', va='top')
+        fizik = (
+            f"▸ Skaler Uzaklık (r)         : {r_mag:.2f} km\n"
+            f"▸ Skaler Hız (v)             : {v_mag:.4f} km/s\n"
+            f"▸ Özgül Açısal Momentum (h)  : {h_mag:.2f} km²/s\n"
+            f"▸ Özgül Mekanik Enerji (ε)   : {epsilon:.4f} km²/s²\n"
+            + (f"▸ Yörünge Periyodu (P)       : {P_sn/3600:.2f} saat  ({P_sn/86400:.2f} gün)"
+               if e < 1 else "▸ Yörünge Periyodu (P)       : Açık Yörünge (Hiperbol/Parabol)")
+        )
+        ax_top.text(0.02, 0.72, fizik, transform=ax_top.transAxes,
+                    fontsize=9.5, linespacing=1.9, va='top', family='monospace')
+
+        ax_p2 = fig2.add_axes([0.12, 0.10, 0.76, 0.62])
+        ax_p2.set_title("Perifokal Yörünge Düzlemi İzdüşümü (x̄ – ȳ)",
+                        fontsize=10, color=C_BASLIK2, fontweight='bold', pad=12)
+        nu_arr = np.linspace(0, 2*np.pi, 500)
+        p_par  = a * (1 - e**2)
+        r_arr  = p_par / (1 + e*np.cos(nu_arr))
+        ax_p2.plot(r_arr*np.cos(nu_arr), r_arr*np.sin(nu_arr),
+                   color=C_BASLIK2, lw=1.5, label='Yörünge')
+        mc = '#3498db' if merkez_ismi == "Dünya" else '#9b59b6'
+        ax_p2.scatter([0], [0], color=mc, s=120, zorder=5, label=merkez_ismi)
+        ax_p2.scatter([p_par/(1+e)], [0], color='#f39c12', s=50, zorder=5, label='Enberi (Π)')
+        ax_p2.plot([0, p_par/(1+e)], [0, 0], color='#f39c12', ls=':', lw=1.2)
+        nu_r = np.radians(nu)
+        xn, yn = r_mag*np.cos(nu_r), r_mag*np.sin(nu_r)
+        ax_p2.scatter([xn], [yn], color='#e74c3c', s=60, zorder=5, label=f'Cisim (ν={nu:.1f}°)')
+        ax_p2.plot([0, xn], [0, yn], color='#bdc3c7', ls='--', lw=1.2)
+        vx_b = -(mu/h_mag)*np.sin(nu_r)
+        vy_b =  (mu/h_mag)*(e+np.cos(nu_r))
+        sc = (a*0.25)/v_mag
+        ax_p2.arrow(xn, yn, vx_b*sc, vy_b*sc,
+                    head_width=a*0.04, head_length=a*0.06,
+                    fc='#e74c3c', ec='#e74c3c', label='Hız (v)')
+        ax_p2.set_aspect('equal', 'box')
+        ax_p2.grid(True, ls=':', alpha=0.5)
+        ax_p2.set_xlabel("x̄  (km)", fontsize=9); ax_p2.set_ylabel("ȳ  (km)", fontsize=9)
+        handles, labels2 = ax_p2.get_legend_handles_labels()
+        ax_p2.legend(dict(zip(labels2, handles)).values(),
+                     dict(zip(labels2, handles)).keys(),
+                     loc='upper right', fontsize=8, framealpha=0.9)
 
         pdf.savefig(fig2, dpi=220)
         plt.close(fig2)
