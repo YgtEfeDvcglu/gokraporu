@@ -593,152 +593,151 @@ def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_
         cizgi(yp, renk=C_BASLIK, lw=1.2)
         yp -= pt2y(5)
 
-        # ── Problem başlığı ──
+        # Problem başlığı
         if mod == "vektor":
-            yaz(0.0, yp, "PROBLEM: Verilen Durum Vektörlerinden Yörünge Elemanlarının Bulunması",
+            yaz(0.0, yp,
+                "PROBLEM: Verilen Durum Vektörlerinden Yörünge Elemanlarının Bulunması",
                 fs=10, bold=True, renk=C_ALT)
         else:
-            yaz(0.0, yp, "PROBLEM: Verilen Yörünge Elemanlarından Durum Vektörlerinin Bulunması",
+            yaz(0.0, yp,
+                "PROBLEM: Verilen Yörünge Elemanlarından Durum Vektörlerinin Bulunması",
                 fs=10, bold=True, renk=C_ALT)
         yp -= pt2y(10) + pt2y(6)
 
-        # ── VERİLENLER (kalın başlık, altına veriler) ──
-        yaz(0.0, yp, "Verilenler:", fs=10, bold=True, renk='#111111')
+        # Verilenler
+        yaz(0.0, yp, "Verilenler:", fs=10, bold=True)
         yp -= pt2y(10) + pt2y(3)
-        yaz(0.02, yp, f"μ = {mu} km³/s²", fs=9.5)
+        yaz(0.03, yp, f"mu = {mu} km^3/s^2", fs=9.5)
         yp -= pt2y(9.5) + pt2y(2)
-        yaz(0.02, yp,
-            f"r⃗  =  {R_vec[0]:.2f} î  +  {R_vec[1]:.2f} ĵ  +  {R_vec[2]:.2f} k̂   (km)",
+        yaz(0.03, yp,
+            f"r  =  {R_vec[0]:.2f} i  +  {R_vec[1]:.2f} j  +  {R_vec[2]:.2f} k   (km)",
             fs=9.5)
         yp -= pt2y(9.5) + pt2y(2)
-        yaz(0.02, yp,
-            f"v⃗  =  {V_vec[0]:.4f} î  +  {V_vec[1]:.4f} ĵ  +  {V_vec[2]:.4f} k̂   (km/s)",
+        yaz(0.03, yp,
+            f"v  =  {V_vec[0]:.4f} i  +  {V_vec[1]:.4f} j  +  {V_vec[2]:.4f} k   (km/s)",
             fs=9.5)
         yp -= pt2y(9.5) + pt2y(8)
         cizgi(yp, renk='#dddddd')
         yp -= pt2y(6)
 
-        # ── ADIM 1 ──
-        yaz(0.0, yp, "ADIM 1: Skaler Büyüklükler ve Radyal Hız", fs=10, bold=True, renk='#111111')
+        # ADIM 1
+        yaz(0.0, yp, "ADIM 1: Skaler Buyuklukler ve Radyal Hiz", fs=10, bold=True)
         yp -= pt2y(10) + pt2y(4)
-        yaz(0.02, yp, f"r  = |r⃗|  = √(rx² + ry² + rz²)  = {r_mag:.4f} km", fs=9.5)
+        yaz(0.03, yp, f"r  = |r|  = sqrt(r . r)  = {r_mag:.4f} km", fs=9.5)
         yp -= pt2y(9.5) + pt2y(3)
-        yaz(0.02, yp, f"v  = |v⃗|  = √(vx² + vy² + vz²)  = {v_mag:.4f} km/s", fs=9.5)
+        yaz(0.03, yp, f"v  = |v|  = sqrt(v . v)  = {v_mag:.4f} km/s", fs=9.5)
         yp -= pt2y(9.5) + pt2y(3)
-        yaz(0.02, yp, f"vr = (r⃗ · v⃗) / r  =  {vr:.4f} km/s"
-            + ("   → > 0: Enberi'den uzaklaşıyor" if vr >= 0 else "   → < 0: Enberi'ye yaklaşıyor"),
-            fs=9.5)
+        vr_yon = "  ->  > 0: Enberi'den uzaklasıyor" if vr >= 0 else "  ->  < 0: Enberi'ye yaklasıyor"
+        yaz(0.03, yp, f"vr = (r . v) / r  =  {vr:.4f} km/s" + vr_yon, fs=9.5)
         yp -= pt2y(9.5) + pt2y(8)
 
-        # ── ADIM 2 ──
-        yaz(0.0, yp, "ADIM 2: Özgül Açısal Momentum Vektörü", fs=10, bold=True, renk='#111111')
+        # ADIM 2 — matris
+        yaz(0.0, yp, "ADIM 2: Ozgul Acisal Momentum Vektoru", fs=10, bold=True)
         yp -= pt2y(10) + pt2y(4)
+        yaz(0.03, yp, "h  = r x v  =", fs=9.5)
 
-        # Matris gösterimi
-        yaz(0.02, yp, "h⃗  = r⃗ × v⃗  =", fs=9.5)
-        # Determinant çizgisi — 3 sütun: î  ĵ  k̂ / rx ry rz / vx vy vz
-        mat_x = 0.30
-        mat_satir = [
-            ("î",            "ĵ",            "k̂"),
-            (f"{R_vec[0]:.2f}", f"{R_vec[1]:.2f}", f"{R_vec[2]:.2f}"),
-            (f"{V_vec[0]:.4f}", f"{V_vec[1]:.4f}", f"{V_vec[2]:.4f}"),
+        # Matris: sabit piksel konumları, monospace hizalama
+        col1_x, col2_x, col3_x = 0.33, 0.52, 0.71
+        bar_L, bar_R = 0.29, 0.88
+        satirlar = [
+            ("i",                "j",                "k"),
+            (f"{R_vec[0]:>10.2f}", f"{R_vec[1]:>10.2f}", f"{R_vec[2]:>10.2f}"),
+            (f"{V_vec[0]:>10.4f}", f"{V_vec[1]:>10.4f}", f"{V_vec[2]:>10.4f}"),
         ]
-        sutun_x = [mat_x, mat_x+0.14, mat_x+0.28]
-        # Dikey çizgiler (sol ve sağ determinant çubuğu)
-        bar_x0, bar_x1 = mat_x - 0.015, mat_x + 0.42
-        for row_idx, row_vals in enumerate(mat_satir):
-            row_y = yp - row_idx * pt2y(11)
-            for col_idx, val in enumerate(row_vals):
-                ax.text(sutun_x[col_idx], row_y, val,
-                        transform=ax.transAxes, fontsize=9,
-                        ha='center', va='top', color='#111')
-        mat_top = yp + pt2y(2)
-        mat_bot = yp - 2 * pt2y(11) - pt2y(2)
-        ax.plot([bar_x0, bar_x0], [mat_bot, mat_top],
+        satir_h = pt2y(11)
+        mat_top_y = yp + pt2y(3)
+        for idx, (c1, c2, c3) in enumerate(satirlar):
+            ry2 = yp - idx * satir_h
+            ax.text(col1_x, ry2, c1, transform=ax.transAxes,
+                    fontsize=9, ha='right', va='top', family='monospace')
+            ax.text(col2_x, ry2, c2, transform=ax.transAxes,
+                    fontsize=9, ha='right', va='top', family='monospace')
+            ax.text(col3_x, ry2, c3, transform=ax.transAxes,
+                    fontsize=9, ha='right', va='top', family='monospace')
+        mat_bot_y = yp - 2 * satir_h - pt2y(3)
+        ax.plot([bar_L, bar_L], [mat_bot_y, mat_top_y],
                 transform=ax.transAxes, color='#333', lw=1.0)
-        ax.plot([bar_x1, bar_x1], [mat_bot, mat_top],
+        ax.plot([bar_R, bar_R], [mat_bot_y, mat_top_y],
                 transform=ax.transAxes, color='#333', lw=1.0)
 
-        yp -= 3 * pt2y(11) + pt2y(4)
-        yaz(0.02, yp,
-            f"h⃗  =  {H_vec[0]:.2f} î  +  {H_vec[1]:.2f} ĵ  +  {H_vec[2]:.2f} k̂   (km²/s)",
+        yp -= 3 * satir_h + pt2y(6)
+        yaz(0.03, yp,
+            f"h  =  {H_vec[0]:.2f} i  +  {H_vec[1]:.2f} j  +  {H_vec[2]:.2f} k   (km^2/s)",
             fs=9.5)
         yp -= pt2y(9.5) + pt2y(3)
-        yaz(0.02, yp, f"h  = |h⃗|  = {h_mag:.2f} km²/s", fs=9.5)
+        yaz(0.03, yp, f"h  = |h|  = sqrt(h . h)  = {h_mag:.2f} km^2/s", fs=9.5)
         yp -= pt2y(9.5) + pt2y(8)
 
-        # ── ADIM 3 ──
-        yaz(0.0, yp, "ADIM 3: Eğiklik (i) ve Çıkış Düğümü (Ω)", fs=10, bold=True, renk='#111111')
+        # ADIM 3
+        yaz(0.0, yp, "ADIM 3: Egiklik (i) ve Cikis Dugumu (Omega)", fs=10, bold=True)
         yp -= pt2y(10) + pt2y(4)
-        yaz(0.02, yp,
-            f"i  = arccos(hz / h)  = arccos({H_vec[2]:.2f} / {h_mag:.2f})  = {i:.4f}°",
+        yaz(0.03, yp,
+            f"i  = arccos(hz / h)  = arccos({H_vec[2]:.2f} / {h_mag:.2f})  = {i:.4f} deg",
             fs=9.5)
         yp -= pt2y(9.5) + pt2y(3)
-        yaz(0.02, yp,
-            f"N⃗  = k̂ × h⃗  =  [{N_vec[0]:.2f}, {N_vec[1]:.2f}, {N_vec[2]:.2f}]",
+        yaz(0.03, yp,
+            f"N  = k x h  =  [{N_vec[0]:.2f},  {N_vec[1]:.2f},  {N_vec[2]:.2f}]",
             fs=9.5)
         yp -= pt2y(9.5) + pt2y(3)
-        yaz(0.02, yp, f"N  = |N⃗|  = {n_mag:.2f}", fs=9.5)
+        yaz(0.03, yp, f"N  = |N|  = sqrt(N . N)  = {n_mag:.2f}", fs=9.5)
         yp -= pt2y(9.5) + pt2y(3)
-        omega_not = "  (Ny < 0 → Ω = 360° – Ω alındı)" if N_vec[1] < 0 else ""
-        yaz(0.02, yp,
-            f"Ω  = arccos(Nx / N)  = arccos({N_vec[0]:.2f} / {n_mag:.2f})  = {W:.4f}°" + omega_not,
+        omega_not = "  (Ny < 0  ->  Omega = 360 - Omega alindi)" if N_vec[1] < 0 else ""
+        yaz(0.03, yp,
+            f"Omega  = arccos(Nx / N)  = arccos({N_vec[0]:.2f} / {n_mag:.2f})  = {W:.4f} deg"
+            + omega_not, fs=9.5)
+        yp -= pt2y(9.5) + pt2y(8)
+
+        # ADIM 4
+        yaz(0.0, yp, "ADIM 4: Dismerkezlik Vektoru (e) ve Enberi Argumani (omega)", fs=10, bold=True)
+        yp -= pt2y(10) + pt2y(4)
+        yaz(0.03, yp, "e  = (1/mu) . [(v^2 - mu/r) . r  -  r . vr . v]", fs=9.5)
+        yp -= pt2y(9.5) + pt2y(3)
+        yaz(0.03, yp,
+            f"e  =  [{E_vec[0]:.5f},  {E_vec[1]:.5f},  {E_vec[2]:.5f}]",
+            fs=9.5)
+        yp -= pt2y(9.5) + pt2y(3)
+        yaz(0.03, yp, f"e  = |e|  = sqrt(e . e)  = {e_mag:.5f}", fs=9.5)
+        yp -= pt2y(9.5) + pt2y(3)
+        ez_not = "  (ez < 0  ->  omega = 360 - omega alindi)" if E_vec[2] < 0 else ""
+        yaz(0.03, yp,
+            f"omega  = arccos(N . e / (N . e))  = {w:.4f} deg" + ez_not,
             fs=9.5)
         yp -= pt2y(9.5) + pt2y(8)
 
-        # ── ADIM 4 ──
-        yaz(0.0, yp, "ADIM 4: Dışmerkezlik Vektörü (e) ve Enberi Argümanı (ω)", fs=10, bold=True, renk='#111111')
+        # ADIM 5
+        yaz(0.0, yp, "ADIM 5: Gercek Anomali (nu) ve Yari-Buyuk Eksen (a)", fs=10, bold=True)
         yp -= pt2y(10) + pt2y(4)
-        yaz(0.02, yp,
-            f"ẽ  = (1/μ)·[(v²–μ/r)·r⃗ – r·vr·v⃗]",
+        vr_not2 = "  (vr < 0  ->  nu = 360 - nu alindi)" if vr < 0 else ""
+        yaz(0.03, yp,
+            f"nu  = arccos(e . r / (e . r))  = {nu:.4f} deg" + vr_not2,
             fs=9.5)
         yp -= pt2y(9.5) + pt2y(3)
-        yaz(0.02, yp,
-            f"ẽ  =  [{E_vec[0]:.5f}, {E_vec[1]:.5f}, {E_vec[2]:.5f}]",
-            fs=9.5)
-        yp -= pt2y(9.5) + pt2y(3)
-        yaz(0.02, yp, f"e  = |ẽ|  = {e_mag:.5f}", fs=9.5)
-        yp -= pt2y(9.5) + pt2y(3)
-        ez_not = "  (ez < 0 → ω = 360° – ω alındı)" if E_vec[2] < 0 else ""
-        yaz(0.02, yp,
-            f"ω  = arccos(N⃗·ẽ / (N·e))  = {w:.4f}°" + ez_not,
-            fs=9.5)
-        yp -= pt2y(9.5) + pt2y(8)
-
-        # ── ADIM 5 ──
-        yaz(0.0, yp, "ADIM 5: Gerçek Anomali (ν) ve Yarı-Büyük Eksen (a)", fs=10, bold=True, renk='#111111')
-        yp -= pt2y(10) + pt2y(4)
-        vr_not = "  (vr < 0 → ν = 360° – ν alındı)" if vr < 0 else ""
-        yaz(0.02, yp,
-            f"ν  = arccos(ẽ·r⃗ / (e·r))  = {nu:.4f}°" + vr_not,
-            fs=9.5)
-        yp -= pt2y(9.5) + pt2y(3)
-        yaz(0.02, yp,
-            f"a  = h² / [μ·(1–e²)]  = {a:.2f} km",
+        yaz(0.03, yp,
+            f"a  = h^2 / [mu . (1 - e^2)]  = {a:.2f} km",
             fs=9.5)
         yp -= pt2y(9.5) + pt2y(8)
         cizgi(yp, renk='#dddddd')
         yp -= pt2y(6)
 
-        # ── Sonuç kutusu ──
-        yaz(0.0, yp, "SONUÇ: Yörünge Elemanları", fs=10, bold=True, renk=C_ALT)
+        # Sonuç
+        yaz(0.0, yp, "SONUC: Yorunge Elemanlari", fs=10, bold=True, renk=C_ALT)
         yp -= pt2y(10) + pt2y(4)
         sonuclar = [
-            ("Yarı-büyük eksen",     f"a  = {a:.2f} km"),
-            ("Dışmerkezlik",         f"e  = {e_mag:.5f}"),
-            ("Eğiklik",              f"i  = {i:.4f}°"),
-            ("Çıkış Düğümü Boylamı", f"Ω  = {W:.4f}°"),
-            ("Enberi Argümanı",      f"ω  = {w:.4f}°"),
-            ("Gerçek Anomali",       f"ν  = {nu:.4f}°"),
-            ("Özgül Açısal Moment.", f"h  = {h_mag:.2f} km²/s"),
-            ("Özgül Mek. Enerji",    f"ε  = {epsilon:.4f} km²/s²"),
+            ("Yari-buyuk eksen",      f"a      = {a:.2f} km"),
+            ("Dismerkezlik",          f"e      = {e_mag:.5f}"),
+            ("Egiklik",               f"i      = {i:.4f} deg"),
+            ("Cikis Dugumu Boylamı",  f"Omega  = {W:.4f} deg"),
+            ("Enberi Argumani",       f"omega  = {w:.4f} deg"),
+            ("Gercek Anomali",        f"nu     = {nu:.4f} deg"),
+            ("Ozgul Acisal Moment.",  f"h      = {h_mag:.2f} km^2/s"),
+            ("Ozgul Mek. Enerji",     f"eps    = {epsilon:.4f} km^2/s^2"),
         ]
         if e < 1:
-            sonuclar.append(("Yörünge Periyodu",
-                             f"P  = {P_sn/3600:.4f} saat  ({P_sn/86400:.4f} gün)"))
+            sonuclar.append(("Yorunge Periyodu",
+                f"P  = {P_sn/3600:.4f} saat  ({P_sn/86400:.4f} gun)"))
         for etiket, deger in sonuclar:
-            yaz(0.02, yp, f"▸  {etiket}:", fs=9.5, bold=True, renk='#333')
-            yaz(0.42, yp, deger, fs=9.5)
+            yaz(0.03, yp, f"  {etiket}:", fs=9.5, bold=True, renk='#333')
+            yaz(0.43, yp, deger, fs=9.5)
             yp -= pt2y(9.5) + pt2y(3)
 
         pdf.savefig(fig, dpi=200)
