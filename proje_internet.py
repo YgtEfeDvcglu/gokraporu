@@ -375,15 +375,23 @@ def plotly_3d_ciz_jenerik(a, e, i, W, w, nu, mu, cisim_ismi, merkez_ismi="Dünya
     
     # Vektörler
     fig.add_trace(go.Scatter3d(x=[0, X_enb], y=[0, Y_enb], z=[0, Z_enb], mode='lines', line=dict(color='#f39c12', width=2, dash='dot'), name='Enberi Doğrultusu'))
+    fig.add_trace(go.Scatter3d(x=[X_enb], y=[Y_enb], z=[Z_enb], mode='text', text=['Π'], textfont=dict(size=14, color='#f39c12'), textposition='top center', showlegend=False, hoverinfo='skip'))
+
     fig.add_trace(go.Scatter3d(x=[0, R_vec[0]], y=[0, R_vec[1]], z=[0, R_vec[2]], mode='lines', line=dict(color=renk_r, width=3, dash='dash'), name='Konum Vektörü (r)'))
+    fig.add_trace(go.Scatter3d(x=[R_vec[0]], y=[R_vec[1]], z=[R_vec[2]], mode='text', text=['r⃗'], textfont=dict(size=14, color=renk_r), textposition='bottom right', showlegend=False, hoverinfo='skip'))
+
     fig.add_trace(go.Scatter3d(x=[R_vec[0], R_vec[0] + V_vec[0]*V_scale], y=[R_vec[1], R_vec[1] + V_vec[1]*V_scale], z=[R_vec[2], R_vec[2] + V_vec[2]*V_scale], mode='lines', line=dict(color=renk_v, width=4), name='Hız Vektörü (v)'))
+    fig.add_trace(go.Scatter3d(x=[R_vec[0] + V_vec[0]*V_scale], y=[R_vec[1] + V_vec[1]*V_scale], z=[R_vec[2] + V_vec[2]*V_scale], mode='text', text=['V⃗'], textfont=dict(size=14, color=renk_v), textposition='top right', showlegend=False, hoverinfo='skip'))
+
     fig.add_trace(go.Scatter3d(x=[X_suan], y=[Y_suan], z=[Z_suan], mode='markers', marker=dict(size=7, color=renk_v), name='Cismin Konumu', hoverinfo='skip'))
     
     # Eksenler
     fig.add_trace(go.Scatter3d(x=[0, xy_limit], y=[0, 0], z=[0, 0], mode='lines', line=dict(color='gray', width=2), name='X Ekseni (Koç Noktası)'))
     fig.add_trace(go.Scatter3d(x=[0, 0], y=[0, xy_limit], z=[0, 0], mode='lines', line=dict(color='gray', width=1, dash='dot'), name='Y Ekseni (Aç/Kapat)', visible='legendonly'))
     fig.add_trace(go.Scatter3d(x=[0, 0], y=[0, 0], z=[0, xy_limit], mode='lines', line=dict(color='gray', width=1, dash='dot'), name='Z Ekseni (Aç/Kapat)', visible='legendonly'))
+    
     fig.add_trace(go.Scatter3d(x=[0, Nx*3], y=[0, Ny*3], z=[0, 0], mode='lines', line=dict(color='#8e44ad', width=2, dash='dashdot'), name='Düğüm Çizgisi'))
+    fig.add_trace(go.Scatter3d(x=[Nx*3], y=[Ny*3], z=[0], mode='text', text=['N'], textfont=dict(size=14, color='#8e44ad'), textposition='top right', showlegend=False, hoverinfo='skip'))
     
     # Hover Metinleri (<extra></extra> ile trace etiketleri silindi)
     h_W = "<b>Çıkış Düğümü (Ω):</b><br>X ekseninden düğüm çizgisine.<extra></extra>"
