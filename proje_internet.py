@@ -347,6 +347,7 @@ def plotly_3d_ciz_jenerik(a, e, i, W, w, nu, mu, cisim_ismi, merkez_ismi="Dünya
 
     fig = go.Figure()
     
+    # RENK PALETİ
     renk_merkez = '#3498db' if merkez_ismi == "Dünya" else '#9b59b6'
     renk_yorunge = '#0b192c'
     renk_r = '#e0e0e0'
@@ -359,46 +360,53 @@ def plotly_3d_ciz_jenerik(a, e, i, W, w, nu, mu, cisim_ismi, merkez_ismi="Dünya
     # Merkez Cisim
     fig.add_trace(go.Scatter3d(x=[0], y=[0], z=[0], mode='markers', marker=dict(size=14, color=renk_merkez, line=dict(color='white', width=1)), name=merkez_ismi))
     
-    # Ekvator Cam Zemini (opacity: 0.04 - Çok silik)
+    # EKVATOR CAM ZEMİNİ
     xy_limit = a * 1.5
     grid_val = np.linspace(-xy_limit, xy_limit, 2)
     xg, yg = np.meshgrid(grid_val, grid_val)
     fig.add_trace(go.Surface(x=xg, y=yg, z=np.zeros_like(xg), opacity=0.04, showscale=False, colorscale=[[0, '#bdc3c7'], [1, '#bdc3c7']], name='Ekvator Camı', hoverinfo='skip'))
     
-    # Yörünge Tel Çerçevesi ve Yörünge Camı
-    fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', line=dict(color=renk_yorunge, width=4), name=f'{cisim_ismi} Yörüngesi'))
-    fig.add_trace(go.Mesh3d(x=[0]+list(X_g), y=[0]+list(Y_g), z=[0]+list(Z_g), i=[0]*(len(X_g)-1), j=list(range(1, len(X_g))), k=list(range(2, len(X_g)+1)), color=renk_yorunge, opacity=0.15, name='Yörünge Camı', hoverinfo='skip'))
+    # YÖRÜNGE MANTIĞI (Katmanlı Sistem)
+    # 1. Daimi Kesikli Çizgi (Menüde yok, hep görünür)
+    fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', line=dict(color=renk_yorunge, width=2, dash='dash'), showlegend=False, hoverinfo='skip'))
+    # 2. Açılıp Kapanabilen Kalın Çizgi ve Cam Düzlem (Birbirine bağlı)
+    fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', line=dict(color=renk_yorunge, width=5), name=f'{cisim_ismi} Düzlemi', legendgroup='yorunge_cam'))
+    fig.add_trace(go.Mesh3d(x=[0]+list(X_g), y=[0]+list(Y_g), z=[0]+list(Z_g), i=[0]*(len(X_g)-1), j=list(range(1, len(X_g))), k=list(range(2, len(X_g)+1)), color='#2980b9', opacity=0.25, name='Cam Yüzey', legendgroup='yorunge_cam', showlegend=False, hoverinfo='skip'))
     
-    # Vektörler (r, v, Enberi)
+    # Vektörler
     fig.add_trace(go.Scatter3d(x=[0, X_enb], y=[0, Y_enb], z=[0, Z_enb], mode='lines', line=dict(color='#f39c12', width=2, dash='dot'), name='Enberi Doğrultusu'))
     fig.add_trace(go.Scatter3d(x=[0, R_vec[0]], y=[0, R_vec[1]], z=[0, R_vec[2]], mode='lines', line=dict(color=renk_r, width=3, dash='dash'), name='Konum Vektörü (r)'))
     fig.add_trace(go.Scatter3d(x=[R_vec[0], R_vec[0] + V_vec[0]*V_scale], y=[R_vec[1], R_vec[1] + V_vec[1]*V_scale], z=[R_vec[2], R_vec[2] + V_vec[2]*V_scale], mode='lines', line=dict(color=renk_v, width=4), name='Hız Vektörü (v)'))
     fig.add_trace(go.Scatter3d(x=[X_suan], y=[Y_suan], z=[Z_suan], mode='markers', marker=dict(size=7, color=renk_v), name='Cismin Konumu', hoverinfo='skip'))
     
-    # Eksenler (Y ve Z varsayılan olarak gizli)
+    # Eksenler
     fig.add_trace(go.Scatter3d(x=[0, xy_limit], y=[0, 0], z=[0, 0], mode='lines', line=dict(color='gray', width=2), name='X Ekseni (Koç Noktası)'))
     fig.add_trace(go.Scatter3d(x=[0, 0], y=[0, xy_limit], z=[0, 0], mode='lines', line=dict(color='gray', width=1, dash='dot'), name='Y Ekseni (Aç/Kapat)', visible='legendonly'))
     fig.add_trace(go.Scatter3d(x=[0, 0], y=[0, 0], z=[0, xy_limit], mode='lines', line=dict(color='gray', width=1, dash='dot'), name='Z Ekseni (Aç/Kapat)', visible='legendonly'))
     fig.add_trace(go.Scatter3d(x=[0, Nx*3], y=[0, Ny*3], z=[0, 0], mode='lines', line=dict(color='#8e44ad', width=2, dash='dashdot'), name='Düğüm Çizgisi'))
     
-    # Yaylar
-    fig.add_trace(go.Scatter3d(x=X_W, y=Y_W, z=Z_W, mode='lines', line=dict(color=renk_W, width=4), name='Ω Yayı', hoverinfo='skip'))
-    fig.add_trace(go.Scatter3d(x=X_w, y=Y_w, z=Z_w, mode='lines', line=dict(color=renk_w, width=4), name='ω Yayı', hoverinfo='skip'))
-    fig.add_trace(go.Scatter3d(x=X_i, y=Y_i, z=Z_i, mode='lines', line=dict(color=renk_i, width=4), name='i Yayı', hoverinfo='skip'))
-    fig.add_trace(go.Scatter3d(x=X_nu, y=Y_nu, z=Z_nu, mode='lines', line=dict(color=renk_nu, width=4), name='ν Yayı', hoverinfo='skip'))
-
-    # Devasa Görünmez Hitbox'lar ve Yunan Harfleri
+    # Hover Metinleri
     h_W = "<b>Çıkış Düğümü (Ω):</b><br>X ekseninden düğüm çizgisine."
-    fig.add_trace(go.Scatter3d(x=[X_W[len(X_W)//2]], y=[Y_W[len(Y_W)//2]], z=[Z_W[len(Z_W)//2]], mode='markers+text', marker=dict(size=30, color='rgba(0,0,0,0)'), text=['Ω'], textfont=dict(size=18, color=renk_W), textposition='bottom center', name='Ω Bilgisi', hovertemplate=h_W))
-    
     h_w = "<b>Enberi Argümanı (ω):</b><br>Düğümden Enberiye olan açı."
-    fig.add_trace(go.Scatter3d(x=[X_w[len(X_w)//2]], y=[Y_w[len(Y_w)//2]], z=[Z_w[len(Z_w)//2]], mode='markers+text', marker=dict(size=30, color='rgba(0,0,0,0)'), text=['ω'], textfont=dict(size=18, color=renk_w), textposition='top center', name='ω Bilgisi', hovertemplate=h_w))
-    
     h_i = "<b>Eğiklik (i):</b><br>Yörüngenin Ekvatora eğimi."
-    fig.add_trace(go.Scatter3d(x=[X_i[len(X_i)//2]], y=[Y_i[len(Y_i)//2]], z=[Z_i[len(Z_i)//2]], mode='markers+text', marker=dict(size=30, color='rgba(0,0,0,0)'), text=['i'], textfont=dict(size=18, color=renk_i), textposition='middle right', name='i Bilgisi', hovertemplate=h_i))
-
     h_nu = "<b>Gerçek Anomali (ν):</b><br>Enberiden anlık konuma."
-    fig.add_trace(go.Scatter3d(x=[X_nu[len(X_nu)//2]], y=[Y_nu[len(Y_nu)//2]], z=[Z_nu[len(Z_nu)//2]], mode='markers+text', marker=dict(size=30, color='rgba(0,0,0,0)'), text=['ν'], textfont=dict(size=18, color=renk_nu), textposition='bottom center', name='ν Bilgisi', hovertemplate=h_nu))
+
+    # YAYLAR VE HARFLER (Legendgroup ile bağlandı, Hitbox 100 yapıldı)
+    # Ω
+    fig.add_trace(go.Scatter3d(x=X_W, y=Y_W, z=Z_W, mode='lines', line=dict(color=renk_W, width=4), name='Ω Yayı', legendgroup='W_yayi', hovertemplate=h_W))
+    fig.add_trace(go.Scatter3d(x=[X_W[len(X_W)//2]], y=[Y_W[len(Y_W)//2]], z=[Z_W[len(Z_W)//2]], mode='markers+text', marker=dict(size=100, color='rgba(0,0,0,0)'), text=['Ω'], textfont=dict(size=18, color=renk_W), textposition='bottom center', showlegend=False, legendgroup='W_yayi', hovertemplate=h_W))
+    
+    # ω
+    fig.add_trace(go.Scatter3d(x=X_w, y=Y_w, z=Z_w, mode='lines', line=dict(color=renk_w, width=4), name='ω Yayı', legendgroup='w_yayi', hovertemplate=h_w))
+    fig.add_trace(go.Scatter3d(x=[X_w[len(X_w)//2]], y=[Y_w[len(Y_w)//2]], z=[Z_w[len(Z_w)//2]], mode='markers+text', marker=dict(size=100, color='rgba(0,0,0,0)'), text=['ω'], textfont=dict(size=18, color=renk_w), textposition='top center', showlegend=False, legendgroup='w_yayi', hovertemplate=h_w))
+    
+    # i
+    fig.add_trace(go.Scatter3d(x=X_i, y=Y_i, z=Z_i, mode='lines', line=dict(color=renk_i, width=4), name='i Yayı', legendgroup='i_yayi', hovertemplate=h_i))
+    fig.add_trace(go.Scatter3d(x=[X_i[len(X_i)//2]], y=[Y_i[len(Y_i)//2]], z=[Z_i[len(Z_i)//2]], mode='markers+text', marker=dict(size=100, color='rgba(0,0,0,0)'), text=['i'], textfont=dict(size=18, color=renk_i), textposition='middle right', showlegend=False, legendgroup='i_yayi', hovertemplate=h_i))
+
+    # ν
+    fig.add_trace(go.Scatter3d(x=X_nu, y=Y_nu, z=Z_nu, mode='lines', line=dict(color=renk_nu, width=4), name='ν Yayı', legendgroup='nu_yayi', hovertemplate=h_nu))
+    fig.add_trace(go.Scatter3d(x=[X_nu[len(X_nu)//2]], y=[Y_nu[len(Y_nu)//2]], z=[Z_nu[len(Z_nu)//2]], mode='markers+text', marker=dict(size=100, color='rgba(0,0,0,0)'), text=['ν'], textfont=dict(size=18, color=renk_nu), textposition='bottom center', showlegend=False, legendgroup='nu_yayi', hovertemplate=h_nu))
 
     fig.update_layout(scene=dict(xaxis_title='X (km)', yaxis_title='Y (km)', zaxis_title='Z (km)', aspectmode='data'), margin=dict(l=0, r=0, b=0, t=40),
                       legend=dict(yanchor="top", y=0.95, xanchor="left", x=0.01, bgcolor="rgba(255,255,255,0.1)", font=dict(size=10)))
