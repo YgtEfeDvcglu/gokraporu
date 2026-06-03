@@ -722,7 +722,7 @@ def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_
             
             yaz(yp, "ADIM 4: Dışmerkezlik Vektörü (e) ve Enberi Argümanı (ω)", bold=True); yp -= 0.02
             yaz(yp, r"$\vec{e} = \frac{1}{\mu} \left[ (v^2 - \frac{\mu}{r})\vec{r} - r v_r \vec{v} \right]$"); yp -= 0.02
-            yaz(yp, r"$\vec{e} = [%.5f, %.5f, %.5f]$" % (E_vec[0], E_vec[1], E_vec[2])); yp -= 0.02
+            yaz(yp, r"$\vec{e} = [%.5f\hat{i} %.5f\hat{j} %.5f\hat{k}]$" % (E_vec[0], E_vec[1], E_vec[2])); yp -= 0.02
             yaz(yp, r"$e = |\vec{e}| = %.5f$" % e); yp -= 0.025
             yaz(yp, r"$\omega = \arccos \left( \frac{\vec{N} \cdot \vec{e}}{n e} \right) = %.4f^\circ$  (Eğer $e_z < 0$ ise $360 - \omega$)" % w); yp -= 0.04
             
