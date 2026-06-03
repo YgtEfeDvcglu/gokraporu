@@ -707,8 +707,8 @@ def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_
             yaz(yp, "PROBLEM: Verilen Durum Vektörlerinden Yörünge Elemanlarının Bulunması", fs=11, bold=True, renk=C_ALT); yp -= 0.03
             yaz(yp, "Verilenler:", bold=True); yp -= 0.02
             yaz(yp, f"μ = {mu} km³/s²"); yp -= 0.02
-            yaz(yp, r"$\vec{r} = " + v_str(R_vec, 2) + r" \quad (km)$"); yp -= 0.02
-            yaz(yp, r"$\vec{v} = " + v_str(V_vec, 4) + r" \quad (km/s)$"); yp -= 0.04
+            yaz(yp, r"$\vec{r} = %.2f\hat{i} %s %.2f\hat{j} %s %.2f\hat{k} \quad (km)$" % (R_vec[0], '+' if R_vec[1]>=0 else '-', abs(R_vec[1]), '+' if R_vec[2]>=0 else '-', abs(R_vec[2]))); yp -= 0.02
+            yaz(yp, r"$\vec{v} = %.4f\hat{i} %s %.4f\hat{j} %s %.4f\hat{k} \quad (km/s)$" % (V_vec[0], '+' if V_vec[1]>=0 else '-', abs(V_vec[1]), '+' if V_vec[2]>=0 else '-', abs(V_vec[2]))); yp -= 0.04
             
             yaz(yp, "ADIM 1: Skaler Büyüklükler ve Radyal Hız", bold=True); yp -= 0.02
             yaz(yp, r"$r = |\vec{r}| = \sqrt{x^2 + y^2 + z^2} = %.4f \ km$" % r_mag); yp -= 0.02
