@@ -93,7 +93,57 @@ def uzay_3d_donusum(x, y, i_deg, W_deg, w_deg):
     Z = x * (np.sin(w_rad)*np.sin(i_rad)) + \
         y * (np.cos(w_rad)*np.sin(i_rad))
     return X, Y, Z
+def eleman_to_vektor(a, e, i_deg, W_deg, w_deg, nu_deg, mu):
+    # PDF Sayfa 7-8: Elemanlardan Durum Vektörüne Dönüşüm
+    i, W, w, nu = np.radians(i_deg), np.radians(W_deg), np.radians(w_deg), np.radians(nu_deg)
+    p = a * (1 - e**2)
+    r_mag = p / (1 + e * np.cos(nu))
+    
+    x_bar = r_mag * np.cos(nu)
+    y_bar = r_mag * np.sin(nu)
+    
+    X, Y, Z = uzay_3d_donusum(x_bar, y_bar, i_deg, W_deg, w_deg)
+    
+    h = np.sqrt(mu * p)
+    vx_bar = -(mu / h) * np.sin(nu)
+    vy_bar = (mu / h) * (e + np.cos(nu))
+    
+    VX, VY, VZ = uzay_3d_donusum(vx_bar, vy_bar, i_deg, W_deg, w_deg)
+    return np.array([X, Y, Z]), np.array([VX, VY, VZ]), r_mag
 
+def vektor_to_eleman(R, V, mu):
+    # PDF Sayfa 2-5: Durum Vektöründen Elemanlara Dönüşüm
+    r = np.linalg.norm(R)
+    v = np.linalg.norm(V)
+    vr = np.dot(R, V) / r
+    
+    H = np.cross(R, V)
+    h = np.linalg.norm(H)
+    i = np.arccos(H[2] / h)
+    
+    K = np.array([0, 0, 1])
+    N_vec = np.cross(K, H)
+    n = np.linalg.norm(N_vec)
+    
+    W = np.arccos(N_vec[0] / n) if n != 0 else 0.0
+    if n != 0 and N_vec[1] < 0: W = 2 * np.pi - W
+        
+    E_vec = (1/mu) * ((v**2 - mu/r)*R - r*vr*V)
+    e = np.linalg.norm(E_vec)
+    
+    w = 0.0
+    if n != 0 and e != 0:
+        w = np.arccos(np.clip(np.dot(N_vec, E_vec) / (n * e), -1.0, 1.0))
+        if E_vec[2] < 0: w = 2 * np.pi - w
+        
+    nu = 0.0
+    if e != 0:
+        nu = np.arccos(np.clip(np.dot(E_vec, R) / (e * r), -1.0, 1.0))
+        if vr < 0: nu = 2 * np.pi - nu
+        
+    a = (h**2 / mu) * (1 / (1 - e**2)) if abs(e - 1.0) > 1e-6 else np.inf
+    
+    return a, e, np.degrees(i), np.degrees(W), np.degrees(w), np.degrees(nu)
 def su_anki_jd():
     # Şu anki UTC zamanını alıp Julian Day'e çeviren fonksiyon
     simdi = datetime.now(timezone.utc)
