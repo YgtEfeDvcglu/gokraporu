@@ -551,7 +551,121 @@ def pdf_olustur(a, e, P, tau, cisim_ismi):
 
     pdf_buffer.seek(0)
     return pdf_buffer
+def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_ismi):
+    C_BASLIK, C_ALT, C_TH, C_ZEBRA = '#1a2940', '#2e6da4', '#1a2940', '#eaf2fb'
+    FW, FH = 8.27, 11.69
+    L, R, T, B = 0.055, 0.955, 0.968, 0.100
 
+    pdf_buffer = io.BytesIO()
+    
+    # Fiziksel hesaplamalar
+    r_mag = np.linalg.norm(R_vec)
+    v_mag = np.linalg.norm(V_vec)
+    h_mag = np.linalg.norm(np.cross(R_vec, V_vec))
+    epsilon = (v_mag**2 / 2) - (mu / r_mag)
+    P = (2 * np.pi * np.sqrt(abs(a)**3 / mu)) if e < 1 else np.inf
+    
+    with PdfPages(pdf_buffer) as pdf:
+        fig = plt.figure(figsize=(FW, FH))
+        
+        # 1. BAŞLIK VE BİLGİLER
+        ax_top = fig.add_axes([L, 0.8, R-L, 0.15])
+        ax_top.axis('off')
+        def yaz(x, y, s, fs=9, bold=False, renk='black', ha='left'):
+            ax_top.text(x, y, s, transform=ax_top.transAxes, fontsize=fs, fontweight='bold' if bold else 'normal', color=renk, ha=ha, va='top')
+        
+        yaz(0.5, 0.95, "GÖK MEKANİĞİ LABORATUVAR RAPORU", fs=14, bold=True, renk=C_BASLIK, ha='center')
+        ax_top.plot([0,1],[0.85,0.85], transform=ax_top.transAxes, color=C_BASLIK, lw=1.0)
+        
+        yaz(0.00, 0.77, "Ad Soyad: ", fs=9.5, renk='#222')
+        yaz(0.44, 0.77, "Öğrenci No: ", fs=9.5, renk='#222')
+        yaz(0.74, 0.77, "İmza:", fs=9.5, renk='#222')
+        ax_top.plot([0,1],[0.68,0.68], transform=ax_top.transAxes, color='#dddddd', lw=0.7)
+
+        yaz(0.0, 0.50, "1. HESAPLANAN PARAMETRELER", fs=10, bold=True, renk=C_ALT)
+        
+        # Tablo Çizimi (Vektörler ve Elemanlar)
+        ax_t = fig.add_axes([L, 0.65, R-L, 0.12])
+        ax_t.axis('off')
+        
+        tablo_veri = [
+            ["Konum (X, Y, Z)", f"{R_vec[0]:.2f}, {R_vec[1]:.2f}, {R_vec[2]:.2f} km", "a (Yarı-büyük Eksen)", f"{a:.2f} km"],
+            ["Hız (Vx, Vy, Vz)", f"{V_vec[0]:.3f}, {V_vec[1]:.3f}, {V_vec[2]:.3f} km/s", "e (Dışmerkezlik)", f"{e:.5f}"],
+            ["Merkez Cisim (μ)", f"{mu:.2f} km³/s²", "i (Eğiklik)", f"{i:.2f}°"],
+            ["", "", "Ω (Çıkış Düğümü)", f"{W:.2f}°"],
+            ["", "", "ω (Enberi Argümanı)", f"{w:.2f}°"],
+            ["", "", "ν (Gerçek Anomali)", f"{nu:.2f}°"]
+        ]
+        
+        tbl = ax_t.table(cellText=tablo_veri, colLabels=["Durum Vektörleri", "Değer", "Yörünge Elemanları", "Değer"], loc='center', bbox=[0, 0, 1, 1])
+        tbl.set_fontsize(8)
+        for (row, col), cell in tbl.get_celld().items():
+            cell.set_edgecolor('#aaaaaa'); cell.set_linewidth(0.5)
+            if row == 0: cell.set_facecolor(C_TH); cell.set_text_props(color='white', fontweight='bold')
+            elif row % 2 == 0: cell.set_facecolor(C_ZEBRA)
+            else: cell.set_facecolor('white')
+
+        # 2. DİNAMİK FİZİKSEL BÜYÜKLÜKLER (ÖZET KUTUSU)
+        ax_mid = fig.add_axes([L, 0.52, R-L, 0.1])
+        ax_mid.axis('off')
+        ax_mid.text(0.0, 0.9, "2. DİNAMİK BÜYÜKLÜKLER", transform=ax_mid.transAxes, fontsize=10, fontweight='bold', color=C_ALT, va='top')
+        
+        fizik_metin = (
+            f"▸ Skaler Uzaklık (r) : {r_mag:.2f} km\n"
+            f"▸ Skaler Hız (v) : {v_mag:.3f} km/s\n"
+            f"▸ Özgül Açısal Momentum (h) : {h_mag:.2f} km²/s\n"
+            f"▸ Özgül Mekanik Enerji (ε) : {epsilon:.4f} km²/s²\n"
+            f"▸ Yörünge Periyodu (P) : {P/3600:.2f} saat ({P/86400:.2f} gün)" if e < 1 else f"▸ Yörünge Periyodu (P) : Açık Yörünge (Hiperbol/Parabol)"
+        )
+        ax_mid.text(0.02, 0.6, fizik_metin, transform=ax_mid.transAxes, fontsize=9, color='#222', va='top', linespacing=1.6)
+
+        # 3. PERİFOKAL DÜZLEM ÇİZİMİ (2D)
+        ax_p = fig.add_axes([L, 0.08, R-L, 0.40])
+        ax_p.set_title("3. PERİFOKAL YÖRÜNGE DÜZLEMİ (x̄ - ȳ)", fontsize=10, color=C_BASLIK, fontweight='bold')
+        
+        # Yörünge elipsini çiz (True Anomaly üzerinden)
+        nu_array = np.linspace(0, 2*np.pi, 500)
+        p_param = a * (1 - e**2)
+        r_array = p_param / (1 + e * np.cos(nu_array))
+        x_bar = r_array * np.cos(nu_array)
+        y_bar = r_array * np.sin(nu_array)
+        
+        ax_p.plot(x_bar, y_bar, color=C_BASLIK, lw=1.5, label='Yörünge', zorder=2)
+        
+        # Merkez cisim ve Enberi (Periapsis)
+        merkez_renk = '#3498db' if merkez_ismi == "Dünya" else '#9b59b6'
+        ax_p.scatter([0], [0], color=merkez_renk, s=120, zorder=5, label=merkez_ismi)
+        ax_p.scatter([p_param/(1+e)], [0], color='#f39c12', s=50, zorder=5, label='Enberi (Π)')
+        ax_p.plot([0, p_param/(1+e)], [0, 0], color='#f39c12', ls=':', lw=1.5, zorder=2)
+        
+        # Cismin anlık konumu (Perifokal)
+        nu_rad = np.radians(nu)
+        x_nu = r_mag * np.cos(nu_rad)
+        y_nu = r_mag * np.sin(nu_rad)
+        ax_p.scatter([x_nu], [y_nu], color='#e74c3c', s=60, zorder=5, label='Cisim (ν)')
+        ax_p.plot([0, x_nu], [0, y_nu], color='#bdc3c7', ls='--', lw=1.5, zorder=1)
+        
+        # Hız vektörü oku (Perifokal Düzlemdeki İzdüşümü)
+        vx_bar = -(mu / h_mag) * np.sin(nu_rad)
+        vy_bar = (mu / h_mag) * (e + np.cos(nu_rad))
+        scale = (a * 0.25) / v_mag # Oku yörünge boyutuna oranla
+        ax_p.arrow(x_nu, y_nu, vx_bar*scale, vy_bar*scale, head_width=a*0.03, head_length=a*0.05, fc='#e74c3c', ec='#e74c3c', label='Hız Vektörü (v)', zorder=6)
+        
+        ax_p.set_aspect('equal', 'box')
+        ax_p.grid(True, linestyle=':', alpha=0.5)
+        ax_p.set_xlabel("x̄ (km)", fontsize=8)
+        ax_p.set_ylabel("ȳ (km)", fontsize=8)
+        
+        # Legend
+        handles, labels = ax_p.get_legend_handles_labels()
+        by_label = dict(zip(labels, handles))
+        ax_p.legend(by_label.values(), by_label.keys(), loc='upper right', fontsize=8, framealpha=0.9)
+
+        pdf.savefig(fig, dpi=220)
+        plt.close(fig)
+
+    pdf_buffer.seek(0)
+    return pdf_buffer
 # ════════════════════════════════════════════════════════════════════
 #  ANA ARAYÜZ (UI)
 # ════════════════════════════════════════════════════════════════════
@@ -650,11 +764,12 @@ elif st.session_state.secim == "jenerik_manuel":
         vz = col_v3.number_input("Vz Hızı [km/s]", value=2.533)
         
         if st.button("Geometriyi Çöz ve Çiz (Vektör Modu)", type="primary"):
-            with st.spinner("Vektörler çözümleniyor..."):
+            with st.spinner("Vektörler çözümleniyor ve PDF Raporu hazırlanıyor..."):
                 R = np.array([rx, ry, rz]); V = np.array([vx, vy, vz])
                 a_c, e_c, i_c, W_c, w_c, nu_c = vektor_to_eleman(R, V, mu_val)
-                st.success(f"Hesaplanan: a={a_c:.1f}km, e={e_c:.4f}, i={i_c:.2f}°, Ω={W_c:.2f}°, ω={w_c:.2f}°, ν={nu_c:.2f}°")
+                st.success(f"Hesaplanan Elemanlar: a={a_c:.1f}km, e={e_c:.4f}, i={i_c:.2f}°, Ω={W_c:.2f}°, ω={w_c:.2f}°, ν={nu_c:.2f}°")
                 st.session_state.aktif_fig = plotly_3d_ciz_jenerik(a_c, e_c, i_c, W_c, w_c, nu_c, mu_val, "Uydu/Cisim", merkez_isim_etiket)
+                st.session_state.aktif_pdf_jenerik = pdf_olustur_jenerik(a_c, e_c, i_c, W_c, w_c, nu_c, mu_val, R, V, "Uydu/Cisim", merkez_isim_etiket)
 
     with tab_eleman:
         st.markdown("**(PDF Sayfa 7-8 Formatı)** - Kepler elemanlarını girerek durum vektörlerini hesaplayın.")
@@ -669,13 +784,23 @@ elif st.session_state.secim == "jenerik_manuel":
         w_in = col_e6.number_input("Enberi Arg. (ω) [°]", value=20.07)
         
         if st.button("Vektörleri Bul ve Çiz (Eleman Modu)", type="primary"):
-            with st.spinner("Uzay matrisi hesaplanıyor..."):
+            with st.spinner("Uzay matrisi hesaplanıyor ve PDF Raporu hazırlanıyor..."):
                 R_out, V_out, r_mag = eleman_to_vektor(a_in, e_in, i_in, W_in, w_in, nu_in, mu_val)
                 st.success(f"Hesaplanan Vektörler:\nR: [{R_out[0]:.1f}, {R_out[1]:.1f}, {R_out[2]:.1f}] km\nV: [{V_out[0]:.3f}, {V_out[1]:.3f}, {V_out[2]:.3f}] km/s")
                 st.session_state.aktif_fig = plotly_3d_ciz_jenerik(a_in, e_in, i_in, W_in, w_in, nu_in, mu_val, "Uydu/Cisim", merkez_isim_etiket)
+                st.session_state.aktif_pdf_jenerik = pdf_olustur_jenerik(a_in, e_in, i_in, W_in, w_in, nu_in, mu_val, R_out, V_out, "Uydu/Cisim", merkez_isim_etiket)
 
     if "aktif_fig" in st.session_state and st.session_state.secim == "jenerik_manuel":
         st.plotly_chart(st.session_state.aktif_fig, use_container_width=True)
+        
+        # EĞER PDF OLUŞTUYSA İNDİR BUTONUNU GÖSTER
+        if "aktif_pdf_jenerik" in st.session_state:
+            st.download_button(
+                label="📥 PDF Laboratuvar Raporunu İndir",
+                data=st.session_state.aktif_pdf_jenerik,
+                file_name="GokMekanigi_Vektor_Raporu.pdf",
+                mime="application/pdf"
+            )
 elif st.session_state.secim == "jpl":
     if st.button("← Geri Dön / Yöntem Değiştir"):
         st.session_state.secim = None
