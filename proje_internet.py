@@ -664,6 +664,154 @@ def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_
         pdf.savefig(fig, dpi=220)
         plt.close(fig)
 
+def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_ismi, mod="vektor"):
+    C_BASLIK, C_ALT, C_KOYU = '#1a2940', '#2e6da4', '#111111'
+    FW, FH = 8.27, 11.69
+    
+    pdf_buffer = io.BytesIO()
+    
+    r_mag = np.linalg.norm(R_vec)
+    v_mag = np.linalg.norm(V_vec)
+    vr = np.dot(R_vec, V_vec) / r_mag
+    H_vec = np.cross(R_vec, V_vec)
+    h_mag = np.linalg.norm(H_vec)
+    K_vec = np.array([0, 0, 1])
+    N_vec = np.cross(K_vec, H_vec)
+    n_mag = np.linalg.norm(N_vec)
+    E_vec = (1/mu) * ((v_mag**2 - mu/r_mag)*R_vec - r_mag*vr*V_vec)
+    epsilon = (v_mag**2 / 2) - (mu / r_mag)
+    P = (2 * np.pi * np.sqrt(abs(a)**3 / mu)) if e < 1 else np.inf
+
+    with PdfPages(pdf_buffer) as pdf:
+        # ==========================================
+        # SAYFA 1: ADIM ADIM MATEMATİKSEL ÇÖZÜM
+        # ==========================================
+        fig1 = plt.figure(figsize=(FW, FH))
+        ax1 = fig1.add_axes([0.08, 0.05, 0.84, 0.90])
+        ax1.axis('off')
+        
+        def yaz(y, metin, fs=10, bold=False, renk=C_KOYU):
+            ax1.text(0.0, y, metin, transform=ax1.transAxes, fontsize=fs, fontweight='bold' if bold else 'normal', color=renk, va='top', ha='left')
+        
+        ax1.text(0.5, 1.0, "GÖK MEKANİĞİ - ADIM ADIM ÇÖZÜM RAPORU", transform=ax1.transAxes, fontsize=14, fontweight='bold', color=C_BASLIK, ha='center', va='top')
+        ax1.plot([0,1],[0.98,0.98], transform=ax1.transAxes, color=C_BASLIK, lw=1.5)
+        
+        yp = 0.95
+        if mod == "vektor":
+            yaz(yp, "PROBLEM: Verilen Durum Vektörlerinden Yörünge Elemanlarının Bulunması", fs=11, bold=True, renk=C_ALT); yp -= 0.03
+            yaz(yp, f"Verilenler:  μ = {mu} km³/s²"); yp -= 0.02
+            yaz(yp, r"$\vec{r} = %.2f \hat{i} + %.2f \hat{j} + %.2f \hat{k} \quad (km)$" % (R_vec[0], R_vec[1], R_vec[2])); yp -= 0.02
+            yaz(yp, r"$\vec{v} = %.4f \hat{i} + %.4f \hat{j} + %.4f \hat{k} \quad (km/s)$" % (V_vec[0], V_vec[1], V_vec[2])); yp -= 0.04
+            
+            yaz(yp, "ADIM 1: Skaler Büyüklükler ve Radyal Hız", bold=True); yp -= 0.02
+            yaz(yp, r"$r = |\vec{r}| = \sqrt{x^2 + y^2 + z^2} = %.4f \ km$" % r_mag); yp -= 0.02
+            yaz(yp, r"$v = |\vec{v}| = \sqrt{v_x^2 + v_y^2 + v_z^2} = %.4f \ km/s$" % v_mag); yp -= 0.02
+            yaz(yp, r"$v_r = \frac{\vec{r} \cdot \vec{v}}{r} = %.4f \ km/s$" % vr); yp -= 0.04
+            
+            yaz(yp, "ADIM 2: Özgül Açısal Momentum Vektörü", bold=True); yp -= 0.02
+            yaz(yp, r"$\vec{h} = \vec{r} \times \vec{v} = (y v_z - z v_y)\hat{i} + (z v_x - x v_z)\hat{j} + (x v_y - y v_x)\hat{k}$"); yp -= 0.02
+            yaz(yp, r"$\vec{h} = %.2f \hat{i} + %.2f \hat{j} + %.2f \hat{k} \quad (km^2/s)$" % (H_vec[0], H_vec[1], H_vec[2])); yp -= 0.02
+            yaz(yp, r"$h = |\vec{h}| = %.2f \ km^2/s$" % h_mag); yp -= 0.04
+            
+            yaz(yp, "ADIM 3: Eğiklik (i) ve Çıkış Düğümü (Ω)", bold=True); yp -= 0.02
+            yaz(yp, r"$i = \arccos(h_z / h) = \arccos(%.2f / %.2f) = %.4f^\circ$" % (H_vec[2], h_mag, i)); yp -= 0.025
+            yaz(yp, r"Düğüm Vektörü: $\vec{N} = \hat{k} \times \vec{h} = [-h_y, h_x, 0] = [%.2f, %.2f, 0]$" % (N_vec[0], N_vec[1])); yp -= 0.02
+            yaz(yp, r"$n = |\vec{N}| = %.2f$" % n_mag); yp -= 0.025
+            yaz(yp, r"$\Omega = \arccos(N_x / n) = %.4f^\circ$  (Eğer $N_y < 0$ ise $360 - \Omega$ alınır)" % W); yp -= 0.04
+            
+            yaz(yp, "ADIM 4: Dışmerkezlik Vektörü (e) ve Enberi Argümanı (ω)", bold=True); yp -= 0.02
+            yaz(yp, r"$\vec{e} = \frac{1}{\mu} \left[ (v^2 - \frac{\mu}{r})\vec{r} - r v_r \vec{v} \right]$"); yp -= 0.02
+            yaz(yp, r"$\vec{e} = [%.5f, %.5f, %.5f]$" % (E_vec[0], E_vec[1], E_vec[2])); yp -= 0.02
+            yaz(yp, r"$e = |\vec{e}| = %.5f$" % e); yp -= 0.025
+            yaz(yp, r"$\omega = \arccos \left( \frac{\vec{N} \cdot \vec{e}}{n e} \right) = %.4f^\circ$  (Eğer $e_z < 0$ ise $360 - \omega$)" % w); yp -= 0.04
+            
+            yaz(yp, "ADIM 5: Gerçek Anomali (ν) ve Yarı-Büyük Eksen (a)", bold=True); yp -= 0.02
+            yaz(yp, r"$\nu = \arccos \left( \frac{\vec{e} \cdot \vec{r}}{e r} \right) = %.4f^\circ$  (Eğer $v_r < 0$ ise $360 - \nu$)" % nu); yp -= 0.025
+            yaz(yp, r"$a = \frac{h^2}{\mu(1 - e^2)} = %.2f \ km$" % a); yp -= 0.04
+
+        else:
+            yaz(yp, "PROBLEM: Yörünge Elemanlarından Durum Vektörlerinin Bulunması", fs=11, bold=True, renk=C_ALT); yp -= 0.03
+            yaz(yp, f"Verilenler: μ={mu}, a={a:.2f}, e={e:.4f}, i={i:.2f}°, Ω={W:.2f}°, ω={w:.2f}°, ν={nu:.2f}°"); yp -= 0.04
+            
+            yaz(yp, "ADIM 1: Perifokal Düzlemdeki Uzaklık ve Koordinatlar", bold=True); yp -= 0.02
+            p_val = a * (1 - e**2)
+            yaz(yp, r"$p = a(1 - e^2) = %.2f \ km$" % p_val); yp -= 0.02
+            yaz(yp, r"$r = \frac{p}{1 + e \cos\nu} = %.2f \ km$" % r_mag); yp -= 0.03
+            yaz(yp, r"$\bar{x} = r \cos\nu = %.2f \ km$" % (r_mag * np.cos(np.radians(nu)))); yp -= 0.02
+            yaz(yp, r"$\bar{y} = r \sin\nu = %.2f \ km$" % (r_mag * np.sin(np.radians(nu)))); yp -= 0.04
+
+            yaz(yp, "ADIM 2: Perifokal Düzlemdeki Hız Bileşenleri", bold=True); yp -= 0.02
+            h_val = np.sqrt(mu * p_val)
+            yaz(yp, r"$h = \sqrt{\mu p} = %.2f \ km^2/s$" % h_val); yp -= 0.02
+            yaz(yp, r"$\bar{v}_x = -\frac{\mu}{h} \sin\nu = %.4f \ km/s$" % (-(mu/h_val)*np.sin(np.radians(nu)))); yp -= 0.02
+            yaz(yp, r"$\bar{v}_y = \frac{\mu}{h} (e + \cos\nu) = %.4f \ km/s$" % ((mu/h_val)*(e + np.cos(np.radians(nu))))); yp -= 0.04
+
+            yaz(yp, "ADIM 3: 3B Ekvatoryal Uzaya Dönüşüm Matrisi (Euler Açıları)", bold=True); yp -= 0.02
+            yaz(yp, r"$R_{313}(\Omega, i, \omega) = R_3(-\Omega) R_1(-i) R_3(-\omega)$"); yp -= 0.03
+            yaz(yp, r"Dönüşüm sonrasında Ekvatoryal Uzaydaki (X, Y, Z) Durum Vektörleri:"); yp -= 0.02
+            yaz(yp, r"$\vec{R} = [%.2f, \ %.2f, \ %.2f] \ km$" % (R_vec[0], R_vec[1], R_vec[2])); yp -= 0.02
+            yaz(yp, r"$\vec{V} = [%.4f, \ %.4f, \ %.4f] \ km/s$" % (V_vec[0], V_vec[1], V_vec[2])); yp -= 0.04
+            
+        pdf.savefig(fig1, dpi=220)
+        plt.close(fig1)
+
+        # ==========================================
+        # SAYFA 2: GRAFİK VE FİZİKSEL ÖZET
+        # ==========================================
+        fig2 = plt.figure(figsize=(FW, FH))
+        
+        # Fiziksel Özet Tablosu
+        ax_top = fig2.add_axes([0.1, 0.75, 0.8, 0.15])
+        ax_top.axis('off')
+        ax_top.text(0.0, 1.0, "EK: SİSTEMİN FİZİKSEL DURUM ÖZETİ", transform=ax_top.transAxes, fontsize=11, fontweight='bold', color=C_ALT)
+        fizik_metin = (
+            f"▸ Skaler Uzaklık (r) : {r_mag:.2f} km\n"
+            f"▸ Skaler Hız (v) : {v_mag:.4f} km/s\n"
+            f"▸ Özgül Açısal Momentum (h) : {h_mag:.2f} km²/s\n"
+            f"▸ Özgül Mekanik Enerji (ε) : {epsilon:.4f} km²/s²\n"
+            f"▸ Yörünge Periyodu (P) : {P/3600:.2f} saat ({P/86400:.2f} gün)" if e < 1 else f"▸ Yörünge Periyodu (P) : Açık Yörünge (Hiperbol/Parabol)"
+        )
+        ax_top.text(0.02, 0.7, fizik_metin, transform=ax_top.transAxes, fontsize=10, linespacing=1.8, va='top')
+
+        # Perifokal Grafik
+        ax_p = fig2.add_axes([0.15, 0.15, 0.7, 0.5])
+        ax_p.set_title("Perifokal Yörünge Düzlemi İzdüşümü (x̄ - ȳ)", fontsize=10, color=C_BASLIK, fontweight='bold', pad=15)
+        
+        nu_array = np.linspace(0, 2*np.pi, 500)
+        p_param = a * (1 - e**2)
+        r_array = p_param / (1 + e * np.cos(nu_array))
+        x_bar = r_array * np.cos(nu_array)
+        y_bar = r_array * np.sin(nu_array)
+        
+        ax_p.plot(x_bar, y_bar, color=C_BASLIK, lw=1.5, label='Yörünge', zorder=2)
+        
+        merkez_renk = '#3498db' if merkez_ismi == "Dünya" else '#9b59b6'
+        ax_p.scatter([0], [0], color=merkez_renk, s=120, zorder=5, label=merkez_ismi)
+        ax_p.scatter([p_param/(1+e)], [0], color='#f39c12', s=50, zorder=5, label='Enberi (Π)')
+        ax_p.plot([0, p_param/(1+e)], [0, 0], color='#f39c12', ls=':', lw=1.5, zorder=2)
+        
+        nu_rad = np.radians(nu)
+        x_nu = r_mag * np.cos(nu_rad)
+        y_nu = r_mag * np.sin(nu_rad)
+        ax_p.scatter([x_nu], [y_nu], color='#e74c3c', s=60, zorder=5, label='Cisim (ν)')
+        ax_p.plot([0, x_nu], [0, y_nu], color='#bdc3c7', ls='--', lw=1.5, zorder=1)
+        
+        vx_bar = -(mu / h_mag) * np.sin(nu_rad)
+        vy_bar = (mu / h_mag) * (e + np.cos(nu_rad))
+        scale = (a * 0.25) / v_mag 
+        ax_p.arrow(x_nu, y_nu, vx_bar*scale, vy_bar*scale, head_width=a*0.04, head_length=a*0.06, fc='#e74c3c', ec='#e74c3c', label='Hız Vektörü (v)', zorder=6)
+        
+        ax_p.set_aspect('equal', 'box')
+        ax_p.grid(True, linestyle=':', alpha=0.5)
+        ax_p.set_xlabel("x̄ (km)", fontsize=9)
+        ax_p.set_ylabel("ȳ (km)", fontsize=9)
+        handles, labels = ax_p.get_legend_handles_labels()
+        by_label = dict(zip(labels, handles))
+        ax_p.legend(by_label.values(), by_label.keys(), loc='upper right', fontsize=8, framealpha=0.9)
+
+        pdf.savefig(fig2, dpi=220)
+        plt.close(fig2)
+
     pdf_buffer.seek(0)
     return pdf_buffer
     
@@ -765,12 +913,12 @@ elif st.session_state.secim == "jenerik_manuel":
         vz = col_v3.number_input("Vz Hızı [km/s]", value=2.533)
         
         if st.button("Geometriyi Çöz ve Çiz (Vektör Modu)", type="primary"):
-            with st.spinner("Vektörler çözümleniyor ve PDF Raporu hazırlanıyor..."):
+            with st.spinner("Vektörler çözümleniyor ve Akademik PDF Raporu hazırlanıyor..."):
                 R = np.array([rx, ry, rz]); V = np.array([vx, vy, vz])
                 a_c, e_c, i_c, W_c, w_c, nu_c = vektor_to_eleman(R, V, mu_val)
                 st.success(f"Hesaplanan Elemanlar: a={a_c:.1f}km, e={e_c:.4f}, i={i_c:.2f}°, Ω={W_c:.2f}°, ω={w_c:.2f}°, ν={nu_c:.2f}°")
                 st.session_state.aktif_fig = plotly_3d_ciz_jenerik(a_c, e_c, i_c, W_c, w_c, nu_c, mu_val, "Uydu/Cisim", merkez_isim_etiket)
-                st.session_state.aktif_pdf_jenerik = pdf_olustur_jenerik(a_c, e_c, i_c, W_c, w_c, nu_c, mu_val, R, V, "Uydu/Cisim", merkez_isim_etiket)
+                st.session_state.aktif_pdf_jenerik = pdf_olustur_jenerik(a_c, e_c, i_c, W_c, w_c, nu_c, mu_val, R, V, "Uydu/Cisim", merkez_isim_etiket, mod="vektor")
 
     with tab_eleman:
         st.markdown("**(PDF Sayfa 7-8 Formatı)** - Kepler elemanlarını girerek durum vektörlerini hesaplayın.")
@@ -785,11 +933,11 @@ elif st.session_state.secim == "jenerik_manuel":
         w_in = col_e6.number_input("Enberi Arg. (ω) [°]", value=20.07)
         
         if st.button("Vektörleri Bul ve Çiz (Eleman Modu)", type="primary"):
-            with st.spinner("Uzay matrisi hesaplanıyor ve PDF Raporu hazırlanıyor..."):
+            with st.spinner("Dönüşüm matrisleri hesaplanıyor ve Akademik PDF Raporu hazırlanıyor..."):
                 R_out, V_out, r_mag = eleman_to_vektor(a_in, e_in, i_in, W_in, w_in, nu_in, mu_val)
                 st.success(f"Hesaplanan Vektörler:\nR: [{R_out[0]:.1f}, {R_out[1]:.1f}, {R_out[2]:.1f}] km\nV: [{V_out[0]:.3f}, {V_out[1]:.3f}, {V_out[2]:.3f}] km/s")
                 st.session_state.aktif_fig = plotly_3d_ciz_jenerik(a_in, e_in, i_in, W_in, w_in, nu_in, mu_val, "Uydu/Cisim", merkez_isim_etiket)
-                st.session_state.aktif_pdf_jenerik = pdf_olustur_jenerik(a_in, e_in, i_in, W_in, w_in, nu_in, mu_val, R_out, V_out, "Uydu/Cisim", merkez_isim_etiket)
+                st.session_state.aktif_pdf_jenerik = pdf_olustur_jenerik(a_in, e_in, i_in, W_in, w_in, nu_in, mu_val, R_out, V_out, "Uydu/Cisim", merkez_isim_etiket, mod="eleman")
 
     if "aktif_fig" in st.session_state and st.session_state.secim == "jenerik_manuel":
         st.plotly_chart(st.session_state.aktif_fig, use_container_width=True)
