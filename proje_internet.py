@@ -700,7 +700,7 @@ def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_
         if mod == "vektor":
             yaz(yp, "PROBLEM: Verilen Durum Vektörlerinden Yörünge Elemanlarının Bulunması", fs=11, bold=True, renk=C_ALT); yp -= 0.03
             yaz(yp, "Verilenler:", bold=True); yp -= 0.02
-            yaz(yp, r"μ = {mu} km³/s²"); yp -= 0.02
+            yaz(yp, f"μ = {mu} km³/s²"); yp -= 0.02
             yaz(yp, r"$\vec{r} = %.2f \hat{i} + %.2f \hat{j} + %.2f \hat{k} \quad (km)$" % (R_vec[0], R_vec[1], R_vec[2])); yp -= 0.02
             yaz(yp, r"$\vec{v} = %.4f \hat{i} + %.4f \hat{j} + %.4f \hat{k} \quad (km/s)$" % (V_vec[0], V_vec[1], V_vec[2])); yp -= 0.04
             
