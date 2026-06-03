@@ -732,8 +732,8 @@ def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_
 
         else:
             yaz(yp, "PROBLEM: Yörünge Elemanlarından Durum Vektörlerinin Bulunması", fs=11, bold=True, renk=C_ALT); yp -= 0.03
-            yaz(yp, f"Verilenler: μ={mu}, a={a:.2f}, e={e:.4f}, i={i:.2f}°, Ω={W:.2f}°, ω={w:.2f}°, ν={nu:.2f}°"); yp -= 0.04
-            
+            yaz(yp, f"Verilenler:", bold=True); yp -= 0.02 
+            yaz(yp, f"μ={mu}, a={a:.2f}, e={e:.4f}, i={i:.2f}°, Ω={W:.2f}°, ω={w:.2f}°, ν={nu:.2f}°"); yp -= 0.04
             yaz(yp, "ADIM 1: Perifokal Düzlemdeki Uzaklık ve Koordinatlar", bold=True); yp -= 0.02
             p_val = a * (1 - e**2)
             yaz(yp, r"$p = a(1 - e^2) = %.2f \ km$" % p_val); yp -= 0.02
