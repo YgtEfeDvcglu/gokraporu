@@ -318,16 +318,20 @@ st.markdown("<div style='text-align: center; font-size: 2.4em; font-weight: 700;
 st.markdown("<div style='text-align: center; font-size: 1.1em; opacity: 0.85; margin-top: 10px;'>Güneş sistemi cisimlerinin yörünge dinamiklerini hesaplayın, efemeris tablolarını oluşturun ve tek tıkla akademik formatta PDF raporları elde edin.</div><hr>", unsafe_allow_html=True)
 
 # Buton rengini #008b8b yapmak için CSS müdahalesi
+if "merkez_tipi" not in st.session_state:
+    st.session_state.merkez_tipi = None
+
+# Buton rengini #1293B4 yapmak için CSS müdahalesi
 st.markdown("""
     <style>
     div.stButton > button[kind="primary"] {
-        background-color: #008b8b;
+        background-color: #1293B4;
         color: white;
-        border-color: #008b8b;
+        border-color: #1293B4;
     }
     div.stButton > button[kind="primary"]:hover {
-        background-color: #006b6b;
-        border-color: #006b6b;
+        background-color: #0f7a96;
+        border-color: #0f7a96;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -342,27 +346,29 @@ if st.session_state.secim is None:
             st.rerun()
     with col2:
         if st.button("🌍\n\nDÜNYA MERKEZLİ\n\n(Jeosentrik - Ekvatoryal)\n\n", use_container_width=True, type="primary"):
-            st.session_state.secim = "manuel"
+            st.session_state.secim = "jenerik_manuel"
             st.session_state.merkez_tipi = "dunya"
             st.rerun()
     with col3:
-        if st.button("🪐\n\nÖZEL CİSİM MERKEZLİ\n\n(Serbest Parametre)\n\n", use_container_width=True, type="primary"):
-            st.session_state.secim = "manuel"
+        if st.button("🪐\n\nÖZEL CİSİM MERKEZLİ\n\n(Serbest Laboratuvar)\n\n", use_container_width=True, type="primary"):
+            st.session_state.secim = "jenerik_manuel"
             st.session_state.merkez_tipi = "ozel"
             st.rerun()
 
+# --- GÜNEŞ MERKEZLİ ALT MENÜ ---
 if st.session_state.secim == "gunes_secim":
     if st.button("← Ana Menüye Dön"):
         st.session_state.secim = None
+        st.session_state.merkez_tipi = None
         st.rerun()
     st.markdown("<div style='text-align: center; font-size: 1.2em; margin-bottom: 20px;'>Veri giriş yöntemini seçin:</div>", unsafe_allow_html=True)
     alt_col1, alt_col2 = st.columns(2)
     with alt_col1:
-        if st.button("📡 JPL Veritabanından Otomatik Çek"):
+        if st.button("📡\n\nJPL VERİTABANI\n\n(Otomatik Çek)\n\n", use_container_width=True, type="primary"):
             st.session_state.secim = "jpl"
             st.rerun()
     with alt_col2:
-        if st.button("✍️ Manuel Parametre Girişi"):
+        if st.button("✍️\n\nMANUEL GİRİŞ\n\n(Temel Parametreler)\n\n", use_container_width=True, type="primary"):
             st.session_state.secim = "manuel"
             st.rerun()
 
