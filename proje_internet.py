@@ -260,6 +260,15 @@ def plotly_3d_ciz_jenerik(a, e, i, W, w, nu, mu, cisim_ismi, merkez_ismi="Dünya
         xt, yt, zt = uzay_3d_donusum(x_i_2d, y_i_2d, i_temp, W, 0)
         X_i.append(xt); Y_i.append(yt); Z_i.append(zt)
 
+    # 4. ν (Gerçek Anomali) Yayı
+    th_nu = np.linspace(0, np.radians(nu), 50)
+    X_nu, Y_nu, Z_nu = uzay_3d_donusum(R_arc * 0.8 * np.cos(th_nu), R_arc * 0.8 * np.sin(th_nu), i, W, w)
+
+    # Durum Vektörleri ve Enberi Doğrultusu Hesapları
+    R_vec, V_vec, _ = eleman_to_vektor(a, e, i, W, w, nu, mu)
+    V_scale = (a * 0.4) / np.linalg.norm(V_vec) # Hız vektörünü yörünge ölçeğine görsel olarak uydurur
+    X_enb, Y_enb, Z_enb = uzay_3d_donusum(a*(1-e), 0, i, W, w)
+
     fig = go.Figure()
     
     merkez_renk = '#3498db' if merkez_ismi == "Dünya" else '#9b59b6'
@@ -268,14 +277,18 @@ def plotly_3d_ciz_jenerik(a, e, i, W, w, nu, mu, cisim_ismi, merkez_ismi="Dünya
     # Yörünge ve Saydam "Cam" Düzlem
     fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', line=dict(color='#1a2940', width=4), name=f'{cisim_ismi} Yörüngesi'))
     fig.add_trace(go.Mesh3d(x=[0]+list(X_g), y=[0]+list(Y_g), z=[0]+list(Z_g), i=[0]*(len(X_g)-1), j=list(range(1, len(X_g))), k=list(range(2, len(X_g)+1)), color='#3498db', opacity=0.15, name='Yörünge Düzlemi', hoverinfo='skip'))
+    fig.add_trace(go.Scatter3d(x=[X_suan], y=[Y_suan], z=[Z_suan], mode='markers', marker=dict(size=7, color='#e74c3c'), name='Cismin Konumu'))
     
-    fig.add_trace(go.Scatter3d(x=[X_suan], y=[Y_suan], z=[Z_suan], mode='markers', marker=dict(size=7, color='#e74c3c'), name='Cismin Konumu (ν)'))
-    
-    # Referans Eksenleri
+    # Referans Eksenleri ve Temel Vektörler
     fig.add_trace(go.Scatter3d(x=[0, max(X_g)*1.1], y=[0, 0], z=[0, 0], mode='lines', line=dict(color='gray', width=2), name='X Ekseni (Koç Noktası)'))
     fig.add_trace(go.Scatter3d(x=[0, Nx*3], y=[0, Ny*3], z=[0, 0], mode='lines', line=dict(color='#8e44ad', width=2, dash='dashdot'), name='Düğüm Çizgisi'))
     
-    # Hover Metinleri ile Yaylar
+    # PDF Sayfa 5'teki Vektörlerin Eklenmesi (Silik/Kesikli)
+    fig.add_trace(go.Scatter3d(x=[0, X_enb], y=[0, Y_enb], z=[0, Z_enb], mode='lines', line=dict(color='#f39c12', width=2, dash='dot'), name='Enberi Doğrultusu (e)'))
+    fig.add_trace(go.Scatter3d(x=[0, R_vec[0]], y=[0, R_vec[1]], z=[0, R_vec[2]], mode='lines', line=dict(color='#3498db', width=3, dash='dash'), name='Konum Vektörü (r)'))
+    fig.add_trace(go.Scatter3d(x=[R_vec[0], R_vec[0] + V_vec[0]*V_scale], y=[R_vec[1], R_vec[1] + V_vec[1]*V_scale], z=[R_vec[2], R_vec[2] + V_vec[2]*V_scale], mode='lines', line=dict(color='#e74c3c', width=4), name='Hız Vektörü (v)'))
+    
+    # Hover Metinleri ile Yaylar (Kalın Çizgiler)
     h_W = "<b>Çıkış Düğümü Boylamı (Ω):</b><br>Referans X ekseninden düğüm çizgisine olan açıdır."
     fig.add_trace(go.Scatter3d(x=X_W, y=Y_W, z=Z_W, mode='lines', line=dict(color='#2ecc71', width=5), name='Ω', hovertemplate=h_W))
     
@@ -284,6 +297,15 @@ def plotly_3d_ciz_jenerik(a, e, i, W, w, nu, mu, cisim_ismi, merkez_ismi="Dünya
     
     h_i = "<b>Eğiklik (i):</b><br>Yörünge düzleminin referans düzlemle yaptığı açıdır.<br>Düğüme dik ölçülür."
     fig.add_trace(go.Scatter3d(x=X_i, y=Y_i, z=Z_i, mode='lines', line=dict(color='#3498db', width=5), name='i', hovertemplate=h_i))
+
+    h_nu = "<b>Gerçek Anomali (ν):</b><br>Enberi noktasından cismin anlık konumuna olan açıdır."
+    fig.add_trace(go.Scatter3d(x=X_nu, y=Y_nu, z=Z_nu, mode='lines', line=dict(color='#9b59b6', width=5), name='ν', hovertemplate=h_nu))
+
+    # 3D Uzayda Yüzen Matematiksel Etiketler (Semboller)
+    fig.add_trace(go.Scatter3d(x=[X_W[len(X_W)//2]], y=[Y_W[len(Y_W)//2]], z=[Z_W[len(Z_W)//2]], mode='text', text=['Ω'], textfont=dict(size=18, color='#2ecc71'), textposition='bottom center', showlegend=False, hoverinfo='skip'))
+    fig.add_trace(go.Scatter3d(x=[X_w[len(X_w)//2]], y=[Y_w[len(Y_w)//2]], z=[Z_w[len(Z_w)//2]], mode='text', text=['ω'], textfont=dict(size=18, color='#e67e22'), textposition='top center', showlegend=False, hoverinfo='skip'))
+    fig.add_trace(go.Scatter3d(x=[X_i[len(X_i)//2]], y=[Y_i[len(Y_i)//2]], z=[Z_i[len(Z_i)//2]], mode='text', text=['i'], textfont=dict(size=18, color='#3498db'), textposition='middle right', showlegend=False, hoverinfo='skip'))
+    fig.add_trace(go.Scatter3d(x=[X_nu[len(X_nu)//2]], y=[Y_nu[len(Y_nu)//2]], z=[Z_nu[len(Z_nu)//2]], mode='text', text=['ν'], textfont=dict(size=18, color='#9b59b6'), textposition='bottom center', showlegend=False, hoverinfo='skip'))
 
     fig.update_layout(scene=dict(xaxis_title='X (km)', yaxis_title='Y (km)', zaxis_title='Z (km)', aspectmode='data'), margin=dict(l=0, r=0, b=0, t=40),
                       legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5))
