@@ -310,6 +310,99 @@ def plotly_3d_ciz_jenerik(a, e, i, W, w, nu, mu, cisim_ismi, merkez_ismi="Dünya
     fig.update_layout(scene=dict(xaxis_title='X (km)', yaxis_title='Y (km)', zaxis_title='Z (km)', aspectmode='data'), margin=dict(l=0, r=0, b=0, t=40),
                       legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5))
     return fig
+def plotly_3d_ciz_jenerik(a, e, i, W, w, nu, mu, cisim_ismi, merkez_ismi="Dünya"):
+    nu_array = np.linspace(0, 2*np.pi, 500)
+    p = a * (1 - e**2)
+    r_array = p / (1 + e * np.cos(nu_array))
+    
+    x_bar = r_array * np.cos(nu_array)
+    y_bar = r_array * np.sin(nu_array)
+    X_g, Y_g, Z_g = uzay_3d_donusum(x_bar, y_bar, i, W, w)
+    
+    r_suan = p / (1 + e * np.cos(np.radians(nu)))
+    X_suan, Y_suan, Z_suan = uzay_3d_donusum(r_suan * np.cos(np.radians(nu)), r_suan * np.sin(np.radians(nu)), i, W, w)
+    
+    R_arc = a * 0.35
+    
+    th_W = np.linspace(0, np.radians(W), 50)
+    X_W, Y_W, Z_W = R_arc * np.cos(th_W), R_arc * np.sin(th_W), np.zeros_like(th_W)
+    Nx, Ny = X_W[-1], Y_W[-1]
+    
+    th_w = np.linspace(0, np.radians(w), 50)
+    X_w, Y_w, Z_w = uzay_3d_donusum(R_arc * np.cos(th_w), R_arc * np.sin(th_w), i, W, 0)
+    
+    x_i_2d = R_arc * 1.2 * np.cos(np.pi/2)
+    y_i_2d = R_arc * 1.2 * np.sin(np.pi/2)
+    X_i, Y_i, Z_i = [], [], []
+    for i_temp in np.linspace(0, i, 50):
+        xt, yt, zt = uzay_3d_donusum(x_i_2d, y_i_2d, i_temp, W, 0)
+        X_i.append(xt); Y_i.append(yt); Z_i.append(zt)
+        
+    th_nu = np.linspace(0, np.radians(nu), 50)
+    X_nu, Y_nu, Z_nu = uzay_3d_donusum(R_arc * 0.8 * np.cos(th_nu), R_arc * 0.8 * np.sin(th_nu), i, W, w)
+
+    R_vec, V_vec, _ = eleman_to_vektor(a, e, i, W, w, nu, mu)
+    V_scale = (a * 0.4) / np.linalg.norm(V_vec)
+    X_enb, Y_enb, Z_enb = uzay_3d_donusum(a*(1-e), 0, i, W, w)
+
+    fig = go.Figure()
+    
+    renk_merkez = '#3498db' if merkez_ismi == "Dünya" else '#9b59b6'
+    renk_yorunge = '#0b192c'
+    renk_r = '#e0e0e0'
+    renk_v = '#e74c3c'
+    renk_i = '#00ffff'
+    renk_W = '#2ecc71'
+    renk_w = '#e67e22'
+    renk_nu = '#9b59b6'
+    
+    # Merkez Cisim
+    fig.add_trace(go.Scatter3d(x=[0], y=[0], z=[0], mode='markers', marker=dict(size=14, color=renk_merkez, line=dict(color='white', width=1)), name=merkez_ismi))
+    
+    # Ekvator Cam Zemini (opacity: 0.04 - Çok silik)
+    xy_limit = a * 1.5
+    grid_val = np.linspace(-xy_limit, xy_limit, 2)
+    xg, yg = np.meshgrid(grid_val, grid_val)
+    fig.add_trace(go.Surface(x=xg, y=yg, z=np.zeros_like(xg), opacity=0.04, showscale=False, colorscale=[[0, '#bdc3c7'], [1, '#bdc3c7']], name='Ekvator Camı', hoverinfo='skip'))
+    
+    # Yörünge Tel Çerçevesi ve Yörünge Camı
+    fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', line=dict(color=renk_yorunge, width=4), name=f'{cisim_ismi} Yörüngesi'))
+    fig.add_trace(go.Mesh3d(x=[0]+list(X_g), y=[0]+list(Y_g), z=[0]+list(Z_g), i=[0]*(len(X_g)-1), j=list(range(1, len(X_g))), k=list(range(2, len(X_g)+1)), color=renk_yorunge, opacity=0.15, name='Yörünge Camı', hoverinfo='skip'))
+    
+    # Vektörler (r, v, Enberi)
+    fig.add_trace(go.Scatter3d(x=[0, X_enb], y=[0, Y_enb], z=[0, Z_enb], mode='lines', line=dict(color='#f39c12', width=2, dash='dot'), name='Enberi Doğrultusu'))
+    fig.add_trace(go.Scatter3d(x=[0, R_vec[0]], y=[0, R_vec[1]], z=[0, R_vec[2]], mode='lines', line=dict(color=renk_r, width=3, dash='dash'), name='Konum Vektörü (r)'))
+    fig.add_trace(go.Scatter3d(x=[R_vec[0], R_vec[0] + V_vec[0]*V_scale], y=[R_vec[1], R_vec[1] + V_vec[1]*V_scale], z=[R_vec[2], R_vec[2] + V_vec[2]*V_scale], mode='lines', line=dict(color=renk_v, width=4), name='Hız Vektörü (v)'))
+    fig.add_trace(go.Scatter3d(x=[X_suan], y=[Y_suan], z=[Z_suan], mode='markers', marker=dict(size=7, color=renk_v), name='Cismin Konumu', hoverinfo='skip'))
+    
+    # Eksenler (Y ve Z varsayılan olarak gizli)
+    fig.add_trace(go.Scatter3d(x=[0, xy_limit], y=[0, 0], z=[0, 0], mode='lines', line=dict(color='gray', width=2), name='X Ekseni (Koç Noktası)'))
+    fig.add_trace(go.Scatter3d(x=[0, 0], y=[0, xy_limit], z=[0, 0], mode='lines', line=dict(color='gray', width=1, dash='dot'), name='Y Ekseni (Aç/Kapat)', visible='legendonly'))
+    fig.add_trace(go.Scatter3d(x=[0, 0], y=[0, 0], z=[0, xy_limit], mode='lines', line=dict(color='gray', width=1, dash='dot'), name='Z Ekseni (Aç/Kapat)', visible='legendonly'))
+    fig.add_trace(go.Scatter3d(x=[0, Nx*3], y=[0, Ny*3], z=[0, 0], mode='lines', line=dict(color='#8e44ad', width=2, dash='dashdot'), name='Düğüm Çizgisi'))
+    
+    # Yaylar
+    fig.add_trace(go.Scatter3d(x=X_W, y=Y_W, z=Z_W, mode='lines', line=dict(color=renk_W, width=4), name='Ω Yayı', hoverinfo='skip'))
+    fig.add_trace(go.Scatter3d(x=X_w, y=Y_w, z=Z_w, mode='lines', line=dict(color=renk_w, width=4), name='ω Yayı', hoverinfo='skip'))
+    fig.add_trace(go.Scatter3d(x=X_i, y=Y_i, z=Z_i, mode='lines', line=dict(color=renk_i, width=4), name='i Yayı', hoverinfo='skip'))
+    fig.add_trace(go.Scatter3d(x=X_nu, y=Y_nu, z=Z_nu, mode='lines', line=dict(color=renk_nu, width=4), name='ν Yayı', hoverinfo='skip'))
+
+    # Devasa Görünmez Hitbox'lar ve Yunan Harfleri
+    h_W = "<b>Çıkış Düğümü (Ω):</b><br>X ekseninden düğüm çizgisine."
+    fig.add_trace(go.Scatter3d(x=[X_W[len(X_W)//2]], y=[Y_W[len(Y_W)//2]], z=[Z_W[len(Z_W)//2]], mode='markers+text', marker=dict(size=30, color='rgba(0,0,0,0)'), text=['Ω'], textfont=dict(size=18, color=renk_W), textposition='bottom center', name='Ω Bilgisi', hovertemplate=h_W))
+    
+    h_w = "<b>Enberi Argümanı (ω):</b><br>Düğümden Enberiye olan açı."
+    fig.add_trace(go.Scatter3d(x=[X_w[len(X_w)//2]], y=[Y_w[len(Y_w)//2]], z=[Z_w[len(Z_w)//2]], mode='markers+text', marker=dict(size=30, color='rgba(0,0,0,0)'), text=['ω'], textfont=dict(size=18, color=renk_w), textposition='top center', name='ω Bilgisi', hovertemplate=h_w))
+    
+    h_i = "<b>Eğiklik (i):</b><br>Yörüngenin Ekvatora eğimi."
+    fig.add_trace(go.Scatter3d(x=[X_i[len(X_i)//2]], y=[Y_i[len(Y_i)//2]], z=[Z_i[len(Z_i)//2]], mode='markers+text', marker=dict(size=30, color='rgba(0,0,0,0)'), text=['i'], textfont=dict(size=18, color=renk_i), textposition='middle right', name='i Bilgisi', hovertemplate=h_i))
+
+    h_nu = "<b>Gerçek Anomali (ν):</b><br>Enberiden anlık konuma."
+    fig.add_trace(go.Scatter3d(x=[X_nu[len(X_nu)//2]], y=[Y_nu[len(Y_nu)//2]], z=[Z_nu[len(Z_nu)//2]], mode='markers+text', marker=dict(size=30, color='rgba(0,0,0,0)'), text=['ν'], textfont=dict(size=18, color=renk_nu), textposition='bottom center', name='ν Bilgisi', hovertemplate=h_nu))
+
+    fig.update_layout(scene=dict(xaxis_title='X (km)', yaxis_title='Y (km)', zaxis_title='Z (km)', aspectmode='data'), margin=dict(l=0, r=0, b=0, t=40),
+                      legend=dict(yanchor="top", y=0.95, xanchor="left", x=0.01, bgcolor="rgba(255,255,255,0.1)", font=dict(size=10)))
+    return fig
 # ════════════════════════════════════════════════════════════════════
 #  PDF OLUŞTURUCU MOTOR
 # ════════════════════════════════════════════════════════════════════
@@ -515,7 +608,7 @@ elif st.session_state.secim == "jenerik_manuel":
             if key in st.session_state: del st.session_state[key]
         st.rerun()
         
-    st.info("💡 Çift Yönlü Motora Hoş Geldiniz! İster konum/hız vektörlerini girin, ister açıları girin; motor eksik olanı tamamlar.")
+    st.info("💡 Çift Yönlü Motora Hoş Geldiniz! İster konum/hız vektörlerini, ister açıları girin; motor eksik olanı tamamlar.")
     
     mu_val = 398600.4418
     merkez_isim_etiket = "Dünya"
@@ -529,7 +622,7 @@ elif st.session_state.secim == "jenerik_manuel":
     tab_vektor, tab_eleman = st.tabs(["🚀 Durum Vektörleri (r, v) Gireceğim", "📐 Yörünge Elemanları Gireceğim"])
     
     with tab_vektor:
-        st.markdown("**Konum ve hız bileşenlerini girerek Kepler açılarını hesaplayın.**")
+        st.markdown("**(PDF Sayfa 2-5 Formatı)** - Konum ve hız bileşenlerini girerek Kepler açılarını hesaplayın.")
         col_r1, col_r2, col_r3 = st.columns(3)
         rx = col_r1.number_input("X Konumu [km]", value=-6045.0)
         ry = col_r2.number_input("Y Konumu [km]", value=-3490.0)
@@ -544,11 +637,11 @@ elif st.session_state.secim == "jenerik_manuel":
             with st.spinner("Vektörler çözümleniyor..."):
                 R = np.array([rx, ry, rz]); V = np.array([vx, vy, vz])
                 a_c, e_c, i_c, W_c, w_c, nu_c = vektor_to_eleman(R, V, mu_val)
-                st.success(f"Hesaplanan Elemanlar: a={a_c:.1f}km, e={e_c:.4f}, i={i_c:.2f}°, Ω={W_c:.2f}°, ω={w_c:.2f}°, ν={nu_c:.2f}°")
+                st.success(f"Hesaplanan: a={a_c:.1f}km, e={e_c:.4f}, i={i_c:.2f}°, Ω={W_c:.2f}°, ω={w_c:.2f}°, ν={nu_c:.2f}°")
                 st.session_state.aktif_fig = plotly_3d_ciz_jenerik(a_c, e_c, i_c, W_c, w_c, nu_c, mu_val, "Uydu/Cisim", merkez_isim_etiket)
 
     with tab_eleman:
-        st.markdown("**Kepler elemanlarını girerek durum vektörlerini hesaplayın.**")
+        st.markdown("**(PDF Sayfa 7-8 Formatı)** - Kepler elemanlarını girerek durum vektörlerini hesaplayın.")
         col_e1, col_e2, col_e3 = st.columns(3)
         a_in = col_e1.number_input("Yarı-Büyük Eksen (a) [km]", value=8788.0)
         e_in = col_e2.number_input("Dışmerkezlik (e)", value=0.1712, format="%.4f")
