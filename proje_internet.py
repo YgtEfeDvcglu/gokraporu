@@ -367,8 +367,8 @@ def plotly_3d_ciz_jenerik(a, e, i, W, w, nu, mu, cisim_ismi, merkez_ismi="Dünya
     fig.add_trace(go.Surface(x=xg, y=yg, z=np.zeros_like(xg), opacity=0.04, showscale=False, colorscale=[[0, '#bdc3c7'], [1, '#bdc3c7']], name='Ekvator Camı', hoverinfo='skip'))
     
     # YÖRÜNGE MANTIĞI (Katmanlı Sistem)
-    # 1. Daimi Kesikli Çizgi (Menüde yok, hep görünür)
-    fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', line=dict(color=renk_yorunge, width=2, dash='dash'), showlegend=False, hoverinfo='skip'))
+    # 1. Daimi Kesikli Çizgi (Menüde yok, hep görünür) - KALINLIK 4 YAPILDI
+    fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', line=dict(color=renk_yorunge, width=4, dash='dash'), showlegend=False, hoverinfo='skip'))
     # 2. Açılıp Kapanabilen Kalın Çizgi ve Cam Düzlem (Birbirine bağlı)
     fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', line=dict(color=renk_yorunge, width=5), name=f'{cisim_ismi} Düzlemi', legendgroup='yorunge_cam'))
     fig.add_trace(go.Mesh3d(x=[0]+list(X_g), y=[0]+list(Y_g), z=[0]+list(Z_g), i=[0]*(len(X_g)-1), j=list(range(1, len(X_g))), k=list(range(2, len(X_g)+1)), color='#2980b9', opacity=0.25, name='Cam Yüzey', legendgroup='yorunge_cam', showlegend=False, hoverinfo='skip'))
@@ -385,13 +385,13 @@ def plotly_3d_ciz_jenerik(a, e, i, W, w, nu, mu, cisim_ismi, merkez_ismi="Dünya
     fig.add_trace(go.Scatter3d(x=[0, 0], y=[0, 0], z=[0, xy_limit], mode='lines', line=dict(color='gray', width=1, dash='dot'), name='Z Ekseni (Aç/Kapat)', visible='legendonly'))
     fig.add_trace(go.Scatter3d(x=[0, Nx*3], y=[0, Ny*3], z=[0, 0], mode='lines', line=dict(color='#8e44ad', width=2, dash='dashdot'), name='Düğüm Çizgisi'))
     
-    # Hover Metinleri
-    h_W = "<b>Çıkış Düğümü (Ω):</b><br>X ekseninden düğüm çizgisine."
-    h_w = "<b>Enberi Argümanı (ω):</b><br>Düğümden Enberiye olan açı."
-    h_i = "<b>Eğiklik (i):</b><br>Yörüngenin Ekvatora eğimi."
-    h_nu = "<b>Gerçek Anomali (ν):</b><br>Enberiden anlık konuma."
+    # Hover Metinleri (<extra></extra> ile trace etiketleri silindi)
+    h_W = "<b>Çıkış Düğümü (Ω):</b><br>X ekseninden düğüm çizgisine.<extra></extra>"
+    h_w = "<b>Enberi Argümanı (ω):</b><br>Düğümden Enberiye olan açı.<extra></extra>"
+    h_i = "<b>Eğiklik (i):</b><br>Yörüngenin Ekvatora eğimi.<extra></extra>"
+    h_nu = "<b>Gerçek Anomali (ν):</b><br>Enberiden anlık konuma.<extra></extra>"
 
-    # YAYLAR VE HARFLER (Legendgroup ile bağlandı, Hitbox 100 yapıldı)
+    # YAYLAR VE HARFLER
     # Ω
     fig.add_trace(go.Scatter3d(x=X_W, y=Y_W, z=Z_W, mode='lines', line=dict(color=renk_W, width=4), name='Ω Yayı', legendgroup='W_yayi', hovertemplate=h_W))
     fig.add_trace(go.Scatter3d(x=[X_W[len(X_W)//2]], y=[Y_W[len(Y_W)//2]], z=[Z_W[len(Z_W)//2]], mode='markers+text', marker=dict(size=100, color='rgba(0,0,0,0)'), text=['Ω'], textfont=dict(size=18, color=renk_W), textposition='bottom center', showlegend=False, legendgroup='W_yayi', hovertemplate=h_W))
