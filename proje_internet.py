@@ -682,6 +682,12 @@ def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_
     epsilon = (v_mag**2 / 2) - (mu / r_mag)
     P = (2 * np.pi * np.sqrt(abs(a)**3 / mu)) if e < 1 else np.inf
 
+    def v_str(vec, d):
+        sx = f"{vec[0]:.{d}f}\\hat{{i}}"
+        sy = f" + {vec[1]:.{d}f}\\hat{{j}}" if vec[1] >= 0 else f" - {abs(vec[1]):.{d}f}\\hat{{j}}"
+        sz = "" if abs(vec[2]) < 1e-10 else (f" + {vec[2]:.{d}f}\\hat{{k}}" if vec[2] >= 0 else f" - {abs(vec[2]):.{d}f}\\hat{{k}}")
+        return sx + sy + sz
+
     with PdfPages(pdf_buffer) as pdf:
         # ==========================================
         # SAYFA 1: ADIM ADIM MATEMATİKSEL ÇÖZÜM
@@ -701,8 +707,8 @@ def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_
             yaz(yp, "PROBLEM: Verilen Durum Vektörlerinden Yörünge Elemanlarının Bulunması", fs=11, bold=True, renk=C_ALT); yp -= 0.03
             yaz(yp, "Verilenler:", bold=True); yp -= 0.02
             yaz(yp, f"μ = {mu} km³/s²"); yp -= 0.02
-            yaz(yp, r"$\vec{r} = %.2f \hat{i} + %.2f \hat{j} + %.2f \hat{k} \quad (km)$" % (R_vec[0], R_vec[1], R_vec[2])); yp -= 0.02
-            yaz(yp, r"$\vec{v} = %.4f \hat{i} + %.4f \hat{j} + %.4f \hat{k} \quad (km/s)$" % (V_vec[0], V_vec[1], V_vec[2])); yp -= 0.04
+            yaz(yp, r"$\vec{r} = " + v_str(R_vec, 2) + r" \quad (km)$"); yp -= 0.02
+            yaz(yp, r"$\vec{v} = " + v_str(V_vec, 4) + r" \quad (km/s)$"); yp -= 0.04
             
             yaz(yp, "ADIM 1: Skaler Büyüklükler ve Radyal Hız", bold=True); yp -= 0.02
             yaz(yp, r"$r = |\vec{r}| = \sqrt{x^2 + y^2 + z^2} = %.4f \ km$" % r_mag); yp -= 0.02
@@ -711,18 +717,18 @@ def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_
             
             yaz(yp, "ADIM 2: Özgül Açısal Momentum Vektörü", bold=True); yp -= 0.02
             yaz(yp, r"$\vec{h} = \vec{r} \times \vec{v} = (y v_z - z v_y)\hat{i} + (z v_x - x v_z)\hat{j} + (x v_y - y v_x)\hat{k}$"); yp -= 0.02
-            yaz(yp, r"$\vec{h} = %.2f \hat{i} + %.2f \hat{j} + %.2f \hat{k} \quad (km^2/s)$" % (H_vec[0], H_vec[1], H_vec[2])); yp -= 0.02
+            yaz(yp, r"$\vec{h} = " + v_str(H_vec, 2) + r" \quad (km^2/s)$"); yp -= 0.02
             yaz(yp, r"$h = |\vec{h}| = %.2f \ km^2/s$" % h_mag); yp -= 0.04
             
             yaz(yp, "ADIM 3: Eğiklik (i) ve Çıkış Düğümü (Ω)", bold=True); yp -= 0.02
             yaz(yp, r"$i = \arccos(h_z / h) = \arccos(%.2f / %.2f) = %.4f^\circ$" % (H_vec[2], h_mag, i)); yp -= 0.025
-            yaz(yp, r"Düğüm Vektörü: $\vec{N} = \hat{k} \times \vec{h} = [-h_y, h_x, 0] = [%.2f, %.2f, 0]$" % (N_vec[0], N_vec[1])); yp -= 0.02
+            yaz(yp, r"Düğüm Vektörü: $\vec{N} = \hat{k} \times \vec{h} = -h_y\hat{i} + h_x\hat{j} = " + v_str(N_vec, 2) + r"$"); yp -= 0.02
             yaz(yp, r"$n = |\vec{N}| = %.2f$" % n_mag); yp -= 0.025
             yaz(yp, r"$\Omega = \arccos(N_x / n) = %.4f^\circ$  (Eğer $N_y < 0$ ise $360 - \Omega$ alınır)" % W); yp -= 0.04
             
             yaz(yp, "ADIM 4: Dışmerkezlik Vektörü (e) ve Enberi Argümanı (ω)", bold=True); yp -= 0.02
             yaz(yp, r"$\vec{e} = \frac{1}{\mu} \left[ (v^2 - \frac{\mu}{r})\vec{r} - r v_r \vec{v} \right]$"); yp -= 0.02
-            yaz(yp, r"$\vec{e} = [%.5f\hat{i} %.5f\hat{j} %.5f\hat{k}]$" % (E_vec[0], E_vec[1], E_vec[2])); yp -= 0.02
+            yaz(yp, r"$\vec{e} = " + v_str(E_vec, 5) + r"$"); yp -= 0.02
             yaz(yp, r"$e = |\vec{e}| = %.5f$" % e); yp -= 0.025
             yaz(yp, r"$\omega = \arccos \left( \frac{\vec{N} \cdot \vec{e}}{n e} \right) = %.4f^\circ$  (Eğer $e_z < 0$ ise $360 - \omega$)" % w); yp -= 0.04
             
@@ -750,8 +756,8 @@ def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_
             yaz(yp, "ADIM 3: 3B Ekvatoryal Uzaya Dönüşüm Matrisi (Euler Açıları)", bold=True); yp -= 0.02
             yaz(yp, r"$R_{313}(\Omega, i, \omega) = R_3(-\Omega) R_1(-i) R_3(-\omega)$"); yp -= 0.03
             yaz(yp, r"Dönüşüm sonrasında Ekvatoryal Uzaydaki (X, Y, Z) Durum Vektörleri:"); yp -= 0.02
-            yaz(yp, r"$\vec{R} = [%.2f, \ %.2f, \ %.2f] \ km$" % (R_vec[0], R_vec[1], R_vec[2])); yp -= 0.02
-            yaz(yp, r"$\vec{V} = [%.4f, \ %.4f, \ %.4f] \ km/s$" % (V_vec[0], V_vec[1], V_vec[2])); yp -= 0.04
+            yaz(yp, r"$\vec{R} = " + v_str(R_vec, 2) + r" \quad (km)$"); yp -= 0.02
+            yaz(yp, r"$\vec{V} = " + v_str(V_vec, 4) + r" \quad (km/s)$"); yp -= 0.04
             
         pdf.savefig(fig1, dpi=220)
         plt.close(fig1)
