@@ -765,15 +765,15 @@ elif st.session_state.secim == "jenerik_manuel":
         vz = col_v3.number_input("Vz Hızı [km/s]", value=2.533)
         
         if st.button("Geometriyi Çöz ve Çiz (Vektör Modu)", type="primary"):
-            with st.spinner("Vektörler çözümleniyor ve Akademik PDF Raporu hazırlanıyor..."):
+            with st.spinner("Vektörler çözümleniyor ve PDF Raporu hazırlanıyor..."):
                 R = np.array([rx, ry, rz]); V = np.array([vx, vy, vz])
                 a_c, e_c, i_c, W_c, w_c, nu_c = vektor_to_eleman(R, V, mu_val)
                 st.success(f"Hesaplanan Elemanlar: a={a_c:.1f}km, e={e_c:.4f}, i={i_c:.2f}°, Ω={W_c:.2f}°, ω={w_c:.2f}°, ν={nu_c:.2f}°")
                 st.session_state.aktif_fig = plotly_3d_ciz_jenerik(a_c, e_c, i_c, W_c, w_c, nu_c, mu_val, "Uydu/Cisim", merkez_isim_etiket)
-                st.session_state.aktif_pdf_jenerik = pdf_olustur_jenerik(a_c, e_c, i_c, W_c, w_c, nu_c, mu_val, R, V, "Uydu/Cisim", merkez_isim_etiket, mod="vektor")
+                st.session_state.aktif_pdf_jenerik = pdf_olustur_jenerik(a_c, e_c, i_c, W_c, w_c, nu_c, mu_val, R, V, "Uydu/Cisim", merkez_isim_etiket)
 
     with tab_eleman:
-        st.markdown("Kepler elemanlarını girerek durum vektörlerini hesaplayın.")
+        st.markdown("**(PDF Sayfa 7-8 Formatı)** - Kepler elemanlarını girerek durum vektörlerini hesaplayın.")
         col_e1, col_e2, col_e3 = st.columns(3)
         a_in = col_e1.number_input("Yarı-Büyük Eksen (a) [km]", value=8788.0)
         e_in = col_e2.number_input("Dışmerkezlik (e)", value=0.1712, format="%.4f")
@@ -785,11 +785,11 @@ elif st.session_state.secim == "jenerik_manuel":
         w_in = col_e6.number_input("Enberi Arg. (ω) [°]", value=20.07)
         
         if st.button("Vektörleri Bul ve Çiz (Eleman Modu)", type="primary"):
-            with st.spinner("Dönüşüm matrisleri hesaplanıyor ve Akademik PDF Raporu hazırlanıyor..."):
+            with st.spinner("Uzay matrisi hesaplanıyor ve PDF Raporu hazırlanıyor..."):
                 R_out, V_out, r_mag = eleman_to_vektor(a_in, e_in, i_in, W_in, w_in, nu_in, mu_val)
                 st.success(f"Hesaplanan Vektörler:\nR: [{R_out[0]:.1f}, {R_out[1]:.1f}, {R_out[2]:.1f}] km\nV: [{V_out[0]:.3f}, {V_out[1]:.3f}, {V_out[2]:.3f}] km/s")
                 st.session_state.aktif_fig = plotly_3d_ciz_jenerik(a_in, e_in, i_in, W_in, w_in, nu_in, mu_val, "Uydu/Cisim", merkez_isim_etiket)
-                st.session_state.aktif_pdf_jenerik = pdf_olustur_jenerik(a_in, e_in, i_in, W_in, w_in, nu_in, mu_val, R_out, V_out, "Uydu/Cisim", merkez_isim_etiket, mod="eleman")
+                st.session_state.aktif_pdf_jenerik = pdf_olustur_jenerik(a_in, e_in, i_in, W_in, w_in, nu_in, mu_val, R_out, V_out, "Uydu/Cisim", merkez_isim_etiket)
 
     if "aktif_fig" in st.session_state and st.session_state.secim == "jenerik_manuel":
         st.plotly_chart(st.session_state.aktif_fig, use_container_width=True)
