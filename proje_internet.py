@@ -225,6 +225,69 @@ def plotly_3d_ciz(a, e, P, tau, i, W, w, cisim_ismi):
         )
     )
     return fig
+def plotly_3d_ciz_jenerik(a, e, i, W, w, nu, mu, cisim_ismi, merkez_ismi="Dünya"):
+    # Dünya veya Özel Merkezli Jenerik (Akademik) Simülatör
+    nu_array = np.linspace(0, 2*np.pi, 500)
+    p = a * (1 - e**2)
+    r_array = p / (1 + e * np.cos(nu_array))
+    
+    # 2D Yörünge -> 3D Dönüşümü
+    x_bar = r_array * np.cos(nu_array)
+    y_bar = r_array * np.sin(nu_array)
+    X_g, Y_g, Z_g = uzay_3d_donusum(x_bar, y_bar, i, W, w)
+    
+    # Şu anki Konum (nu açısında)
+    r_suan = p / (1 + e * np.cos(np.radians(nu)))
+    X_suan, Y_suan, Z_suan = uzay_3d_donusum(r_suan * np.cos(np.radians(nu)), r_suan * np.sin(np.radians(nu)), i, W, w)
+    
+    # Akademik Yayların Geometrisi
+    R_arc = a * 0.35
+    
+    # 1. Ω Yayı (Referans düzlemde)
+    th_W = np.linspace(0, np.radians(W), 50)
+    X_W, Y_W, Z_W = R_arc * np.cos(th_W), R_arc * np.sin(th_W), np.zeros_like(th_W)
+    Nx, Ny = X_W[-1], Y_W[-1]
+    
+    # 2. ω Yayı (Yörünge düzleminde, düğümden enberiye)
+    th_w = np.linspace(0, np.radians(w), 50)
+    X_w, Y_w, Z_w = uzay_3d_donusum(R_arc * np.cos(th_w), R_arc * np.sin(th_w), i, W, 0)
+    
+    # 3. i Yayı (Düğüm çizgisine tam 90 derece dik konumda)
+    x_i_2d = R_arc * 1.2 * np.cos(np.pi/2)
+    y_i_2d = R_arc * 1.2 * np.sin(np.pi/2)
+    X_i, Y_i, Z_i = [], [], []
+    for i_temp in np.linspace(0, i, 50):
+        xt, yt, zt = uzay_3d_donusum(x_i_2d, y_i_2d, i_temp, W, 0)
+        X_i.append(xt); Y_i.append(yt); Z_i.append(zt)
+
+    fig = go.Figure()
+    
+    merkez_renk = '#3498db' if merkez_ismi == "Dünya" else '#9b59b6'
+    fig.add_trace(go.Scatter3d(x=[0], y=[0], z=[0], mode='markers', marker=dict(size=14, color=merkez_renk, line=dict(color='white', width=1)), name=merkez_ismi))
+    
+    # Yörünge ve Saydam "Cam" Düzlem
+    fig.add_trace(go.Scatter3d(x=X_g, y=Y_g, z=Z_g, mode='lines', line=dict(color='#1a2940', width=4), name=f'{cisim_ismi} Yörüngesi'))
+    fig.add_trace(go.Mesh3d(x=[0]+list(X_g), y=[0]+list(Y_g), z=[0]+list(Z_g), i=[0]*(len(X_g)-1), j=list(range(1, len(X_g))), k=list(range(2, len(X_g)+1)), color='#3498db', opacity=0.15, name='Yörünge Düzlemi', hoverinfo='skip'))
+    
+    fig.add_trace(go.Scatter3d(x=[X_suan], y=[Y_suan], z=[Z_suan], mode='markers', marker=dict(size=7, color='#e74c3c'), name='Cismin Konumu (ν)'))
+    
+    # Referans Eksenleri
+    fig.add_trace(go.Scatter3d(x=[0, max(X_g)*1.1], y=[0, 0], z=[0, 0], mode='lines', line=dict(color='gray', width=2), name='X Ekseni (Koç Noktası)'))
+    fig.add_trace(go.Scatter3d(x=[0, Nx*3], y=[0, Ny*3], z=[0, 0], mode='lines', line=dict(color='#8e44ad', width=2, dash='dashdot'), name='Düğüm Çizgisi'))
+    
+    # Hover Metinleri ile Yaylar
+    h_W = "<b>Çıkış Düğümü Boylamı (Ω):</b><br>Referans X ekseninden düğüm çizgisine olan açıdır."
+    fig.add_trace(go.Scatter3d(x=X_W, y=Y_W, z=Z_W, mode='lines', line=dict(color='#2ecc71', width=5), name='Ω', hovertemplate=h_W))
+    
+    h_w = "<b>Enberi Argümanı (ω):</b><br>Düğüm çizgisinden Enberi noktasına olan açıdır."
+    fig.add_trace(go.Scatter3d(x=X_w, y=Y_w, z=Z_w, mode='lines', line=dict(color='#e67e22', width=5), name='ω', hovertemplate=h_w))
+    
+    h_i = "<b>Eğiklik (i):</b><br>Yörünge düzleminin referans düzlemle yaptığı açıdır.<br>Düğüme dik ölçülür."
+    fig.add_trace(go.Scatter3d(x=X_i, y=Y_i, z=Z_i, mode='lines', line=dict(color='#3498db', width=5), name='i', hovertemplate=h_i))
+
+    fig.update_layout(scene=dict(xaxis_title='X (km)', yaxis_title='Y (km)', zaxis_title='Z (km)', aspectmode='data'), margin=dict(l=0, r=0, b=0, t=40),
+                      legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5))
+    return fig
 # ════════════════════════════════════════════════════════════════════
 #  PDF OLUŞTURUCU MOTOR
 # ════════════════════════════════════════════════════════════════════
@@ -421,8 +484,68 @@ if st.session_state.secim == "gunes_secim":
         if st.button("✍️\n\nMANUEL GİRİŞ\n\n(Temel Parametreler)\n\n", use_container_width=True, type="primary"):
             st.session_state.secim = "manuel"
             st.rerun()
+# --- DÜNYA VE ÖZEL CİSİM EKRANI (ÇİFT YÖNLÜ MOTOR) ---
+elif st.session_state.secim == "jenerik_manuel":
+    if st.button("← Ana Menüye Dön"):
+        st.session_state.secim = None
+        st.session_state.merkez_tipi = None
+        for key in ['aktif_fig', 'aktif_isim']:
+            if key in st.session_state: del st.session_state[key]
+        st.rerun()
+        
+    st.info("💡 Çift Yönlü Motora Hoş Geldiniz! İster konum/hız vektörlerini girin, ister açıları girin; motor eksik olanı tamamlar.")
+    
+    mu_val = 398600.4418
+    merkez_isim_etiket = "Dünya"
+    
+    if st.session_state.merkez_tipi == "ozel":
+        merkez_isim_etiket = "Özel Merkez"
+        mu_val = st.number_input("Merkez Cismin Standart Kütleçekim Parametresi (μ) [km³/s²]:", value=398600.4418, format="%.4f")
+    else:
+        st.markdown(f"**Aktif Merkez:** Dünya (μ = {mu_val} km³/s²)")
 
-if st.session_state.secim == "jpl":
+    tab_vektor, tab_eleman = st.tabs(["🚀 Durum Vektörleri (r, v) Gireceğim", "📐 Yörünge Elemanları Gireceğim"])
+    
+    with tab_vektor:
+        st.markdown("**(PDF Sayfa 2-5 Formatı)** - Konum ve hız bileşenlerini girerek Kepler açılarını hesaplayın.")
+        col_r1, col_r2, col_r3 = st.columns(3)
+        rx = col_r1.number_input("X Konumu [km]", value=-6045.0)
+        ry = col_r2.number_input("Y Konumu [km]", value=-3490.0)
+        rz = col_r3.number_input("Z Konumu [km]", value=2500.0)
+        
+        col_v1, col_v2, col_v3 = st.columns(3)
+        vx = col_v1.number_input("Vx Hızı [km/s]", value=-3.457)
+        vy = col_v2.number_input("Vy Hızı [km/s]", value=6.618)
+        vz = col_v3.number_input("Vz Hızı [km/s]", value=2.533)
+        
+        if st.button("Geometriyi Çöz ve Çiz (Vektör Modu)", type="primary"):
+            with st.spinner("Vektörler çözümleniyor..."):
+                R = np.array([rx, ry, rz]); V = np.array([vx, vy, vz])
+                a_c, e_c, i_c, W_c, w_c, nu_c = vektor_to_eleman(R, V, mu_val)
+                st.success(f"Hesaplanan Elemanlar: a={a_c:.1f}km, e={e_c:.4f}, i={i_c:.2f}°, Ω={W_c:.2f}°, ω={w_c:.2f}°, ν={nu_c:.2f}°")
+                st.session_state.aktif_fig = plotly_3d_ciz_jenerik(a_c, e_c, i_c, W_c, w_c, nu_c, mu_val, "Uydu/Cisim", merkez_isim_etiket)
+
+    with tab_eleman:
+        st.markdown("**(PDF Sayfa 7-8 Formatı)** - Kepler elemanlarını girerek durum vektörlerini hesaplayın.")
+        col_e1, col_e2, col_e3 = st.columns(3)
+        a_in = col_e1.number_input("Yarı-Büyük Eksen (a) [km]", value=8788.0)
+        e_in = col_e2.number_input("Dışmerkezlik (e)", value=0.1712, format="%.4f")
+        nu_in= col_e3.number_input("Gerçek Anomali (ν) [°]", value=28.45)
+        
+        col_e4, col_e5, col_e6 = st.columns(3)
+        i_in = col_e4.number_input("Eğiklik (i) [°]", value=153.2)
+        W_in = col_e5.number_input("Çıkış Düğümü (Ω) [°]", value=255.3)
+        w_in = col_e6.number_input("Enberi Arg. (ω) [°]", value=20.07)
+        
+        if st.button("Vektörleri Bul ve Çiz (Eleman Modu)", type="primary"):
+            with st.spinner("Uzay matrisi hesaplanıyor..."):
+                R_out, V_out, r_mag = eleman_to_vektor(a_in, e_in, i_in, W_in, w_in, nu_in, mu_val)
+                st.success(f"Hesaplanan Vektörler:\nR: [{R_out[0]:.1f}, {R_out[1]:.1f}, {R_out[2]:.1f}] km\nV: [{V_out[0]:.3f}, {V_out[1]:.3f}, {V_out[2]:.3f}] km/s")
+                st.session_state.aktif_fig = plotly_3d_ciz_jenerik(a_in, e_in, i_in, W_in, w_in, nu_in, mu_val, "Uydu/Cisim", merkez_isim_etiket)
+
+    if "aktif_fig" in st.session_state and st.session_state.secim == "jenerik_manuel":
+        st.plotly_chart(st.session_state.aktif_fig, use_container_width=True)
+elif st.session_state.secim == "jpl":
     if st.button("← Geri Dön / Yöntem Değiştir"):
         st.session_state.secim = None
         for key in ['aktif_pdf', 'aktif_fig', 'aktif_isim']:
