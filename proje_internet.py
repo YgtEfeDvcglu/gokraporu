@@ -551,118 +551,6 @@ def pdf_olustur(a, e, P, tau, cisim_ismi):
 
     pdf_buffer.seek(0)
     return pdf_buffer
-def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_ismi):
-    C_BASLIK, C_ALT, C_TH, C_ZEBRA = '#1a2940', '#2e6da4', '#1a2940', '#eaf2fb'
-    FW, FH = 8.27, 11.69
-    L, R, T, B = 0.055, 0.955, 0.968, 0.100
-
-    pdf_buffer = io.BytesIO()
-    
-    # Fiziksel hesaplamalar
-    r_mag = np.linalg.norm(R_vec)
-    v_mag = np.linalg.norm(V_vec)
-    h_mag = np.linalg.norm(np.cross(R_vec, V_vec))
-    epsilon = (v_mag**2 / 2) - (mu / r_mag)
-    P = (2 * np.pi * np.sqrt(abs(a)**3 / mu)) if e < 1 else np.inf
-    
-    with PdfPages(pdf_buffer) as pdf:
-        fig = plt.figure(figsize=(FW, FH))
-        
-        # 1. BAŞLIK VE BİLGİLER
-        ax_top = fig.add_axes([L, 0.8, R-L, 0.15])
-        ax_top.axis('off')
-        def yaz(x, y, s, fs=9, bold=False, renk='black', ha='left'):
-            ax_top.text(x, y, s, transform=ax_top.transAxes, fontsize=fs, fontweight='bold' if bold else 'normal', color=renk, ha=ha, va='top')
-        
-        yaz(0.5, 0.95, "GÖK MEKANİĞİ LABORATUVAR RAPORU", fs=14, bold=True, renk=C_BASLIK, ha='center')
-        ax_top.plot([0,1],[0.85,0.85], transform=ax_top.transAxes, color=C_BASLIK, lw=1.0)
-        
-        yaz(0.00, 0.77, "Ad Soyad: ", fs=9.5, renk='#222')
-        yaz(0.44, 0.77, "Öğrenci No: ", fs=9.5, renk='#222')
-        yaz(0.74, 0.77, "İmza:", fs=9.5, renk='#222')
-        ax_top.plot([0,1],[0.68,0.68], transform=ax_top.transAxes, color='#dddddd', lw=0.7)
-
-        yaz(0.0, 0.50, "1. HESAPLANAN PARAMETRELER", fs=10, bold=True, renk=C_ALT)
-        
-        # Tablo Çizimi (Vektörler ve Elemanlar)
-        ax_t = fig.add_axes([L, 0.65, R-L, 0.12])
-        ax_t.axis('off')
-        
-        tablo_veri = [
-            ["Konum (X, Y, Z)", f"{R_vec[0]:.2f}, {R_vec[1]:.2f}, {R_vec[2]:.2f} km", "a (Yarı-büyük Eksen)", f"{a:.2f} km"],
-            ["Hız (Vx, Vy, Vz)", f"{V_vec[0]:.3f}, {V_vec[1]:.3f}, {V_vec[2]:.3f} km/s", "e (Dışmerkezlik)", f"{e:.5f}"],
-            ["Merkez Cisim (μ)", f"{mu:.2f} km³/s²", "i (Eğiklik)", f"{i:.2f}°"],
-            ["", "", "Ω (Çıkış Düğümü)", f"{W:.2f}°"],
-            ["", "", "ω (Enberi Argümanı)", f"{w:.2f}°"],
-            ["", "", "ν (Gerçek Anomali)", f"{nu:.2f}°"]
-        ]
-        
-        tbl = ax_t.table(cellText=tablo_veri, colLabels=["Durum Vektörleri", "Değer", "Yörünge Elemanları", "Değer"], loc='center', bbox=[0, 0, 1, 1])
-        tbl.set_fontsize(8)
-        for (row, col), cell in tbl.get_celld().items():
-            cell.set_edgecolor('#aaaaaa'); cell.set_linewidth(0.5)
-            if row == 0: cell.set_facecolor(C_TH); cell.set_text_props(color='white', fontweight='bold')
-            elif row % 2 == 0: cell.set_facecolor(C_ZEBRA)
-            else: cell.set_facecolor('white')
-
-        # 2. DİNAMİK FİZİKSEL BÜYÜKLÜKLER (ÖZET KUTUSU)
-        ax_mid = fig.add_axes([L, 0.52, R-L, 0.1])
-        ax_mid.axis('off')
-        ax_mid.text(0.0, 0.9, "2. DİNAMİK BÜYÜKLÜKLER", transform=ax_mid.transAxes, fontsize=10, fontweight='bold', color=C_ALT, va='top')
-        
-        fizik_metin = (
-            f"▸ Skaler Uzaklık (r) : {r_mag:.2f} km\n"
-            f"▸ Skaler Hız (v) : {v_mag:.3f} km/s\n"
-            f"▸ Özgül Açısal Momentum (h) : {h_mag:.2f} km²/s\n"
-            f"▸ Özgül Mekanik Enerji (ε) : {epsilon:.4f} km²/s²\n"
-            f"▸ Yörünge Periyodu (P) : {P/3600:.2f} saat ({P/86400:.2f} gün)" if e < 1 else f"▸ Yörünge Periyodu (P) : Açık Yörünge (Hiperbol/Parabol)"
-        )
-        ax_mid.text(0.02, 0.6, fizik_metin, transform=ax_mid.transAxes, fontsize=9, color='#222', va='top', linespacing=1.6)
-
-        # 3. PERİFOKAL DÜZLEM ÇİZİMİ (2D)
-        ax_p = fig.add_axes([L, 0.08, R-L, 0.40])
-        ax_p.set_title("3. PERİFOKAL YÖRÜNGE DÜZLEMİ (x̄ - ȳ)", fontsize=10, color=C_BASLIK, fontweight='bold')
-        
-        # Yörünge elipsini çiz (True Anomaly üzerinden)
-        nu_array = np.linspace(0, 2*np.pi, 500)
-        p_param = a * (1 - e**2)
-        r_array = p_param / (1 + e * np.cos(nu_array))
-        x_bar = r_array * np.cos(nu_array)
-        y_bar = r_array * np.sin(nu_array)
-        
-        ax_p.plot(x_bar, y_bar, color=C_BASLIK, lw=1.5, label='Yörünge', zorder=2)
-        
-        # Merkez cisim ve Enberi (Periapsis)
-        merkez_renk = '#3498db' if merkez_ismi == "Dünya" else '#9b59b6'
-        ax_p.scatter([0], [0], color=merkez_renk, s=120, zorder=5, label=merkez_ismi)
-        ax_p.scatter([p_param/(1+e)], [0], color='#f39c12', s=50, zorder=5, label='Enberi (Π)')
-        ax_p.plot([0, p_param/(1+e)], [0, 0], color='#f39c12', ls=':', lw=1.5, zorder=2)
-        
-        # Cismin anlık konumu (Perifokal)
-        nu_rad = np.radians(nu)
-        x_nu = r_mag * np.cos(nu_rad)
-        y_nu = r_mag * np.sin(nu_rad)
-        ax_p.scatter([x_nu], [y_nu], color='#e74c3c', s=60, zorder=5, label='Cisim (ν)')
-        ax_p.plot([0, x_nu], [0, y_nu], color='#bdc3c7', ls='--', lw=1.5, zorder=1)
-        
-        # Hız vektörü oku (Perifokal Düzlemdeki İzdüşümü)
-        vx_bar = -(mu / h_mag) * np.sin(nu_rad)
-        vy_bar = (mu / h_mag) * (e + np.cos(nu_rad))
-        scale = (a * 0.25) / v_mag # Oku yörünge boyutuna oranla
-        ax_p.arrow(x_nu, y_nu, vx_bar*scale, vy_bar*scale, head_width=a*0.03, head_length=a*0.05, fc='#e74c3c', ec='#e74c3c', label='Hız Vektörü (v)', zorder=6)
-        
-        ax_p.set_aspect('equal', 'box')
-        ax_p.grid(True, linestyle=':', alpha=0.5)
-        ax_p.set_xlabel("x̄ (km)", fontsize=8)
-        ax_p.set_ylabel("ȳ (km)", fontsize=8)
-        
-        # Legend
-        handles, labels = ax_p.get_legend_handles_labels()
-        by_label = dict(zip(labels, handles))
-        ax_p.legend(by_label.values(), by_label.keys(), loc='upper right', fontsize=8, framealpha=0.9)
-
-        pdf.savefig(fig, dpi=220)
-        plt.close(fig)
 def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_ismi, mod="vektor"):
     C_BASLIK, C_ALT, C_KOYU = '#1a2940', '#2e6da4', '#111111'
     FW, FH = 8.27, 11.69
@@ -700,65 +588,64 @@ def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_
             yaz(yp, "PROBLEM: Verilen Durum Vektörlerinden Yörünge Elemanlarının Bulunması", fs=11, bold=True, renk=C_ALT); yp -= 0.03
             
             yaz(yp, "VERİLENLER:", fs=10, bold=True, renk=C_BASLIK); yp -= 0.025
-            yaz(yp, r"$\mu = %.4f \ km^3/s^2$" % mu); yp -= 0.025
-            yaz(yp, r"$\vec{r} = %.2f\hat{i} %s %.2f\hat{j} %s %.2f\hat{k} \quad (km)$" % (R_vec[0], '+' if R_vec[1]>=0 else '-', abs(R_vec[1]), '+' if R_vec[2]>=0 else '-', abs(R_vec[2]))); yp -= 0.025
-            yaz(yp, r"$\vec{v} = %.4f\hat{i} %s %.4f\hat{j} %s %.4f\hat{k} \quad (km/s)$" % (V_vec[0], '+' if V_vec[1]>=0 else '-', abs(V_vec[1]), '+' if V_vec[2]>=0 else '-', abs(V_vec[2]))); yp -= 0.04
+            yaz(yp, r"$\mu = %.4f \, \mathrm{km}^3/\mathrm{s}^2$" % mu); yp -= 0.025
+            yaz(yp, r"$\vec{r} = %.2f\hat{i} %s %.2f\hat{j} %s %.2f\hat{k} \, (\mathrm{km})$" % (R_vec[0], '+' if R_vec[1]>=0 else '-', abs(R_vec[1]), '+' if R_vec[2]>=0 else '-', abs(R_vec[2]))); yp -= 0.025
+            yaz(yp, r"$\vec{v} = %.4f\hat{i} %s %.4f\hat{j} %s %.4f\hat{k} \, (\mathrm{km/s})$" % (V_vec[0], '+' if V_vec[1]>=0 else '-', abs(V_vec[1]), '+' if V_vec[2]>=0 else '-', abs(V_vec[2]))); yp -= 0.04
             
             yaz(yp, "ADIM 1: Skaler Büyüklükler ve Radyal Hız", bold=True, fs=10, renk=C_ALT); yp -= 0.025
-            yaz(yp, r"Formül: $r = \sqrt{\vec{r} \cdot \vec{r}} \quad \rightarrow \quad r = \sqrt{(%.2f)^2 + (%.2f)^2 + (%.2f)^2} = %.4f \ km$" % (R_vec[0], R_vec[1], R_vec[2], r_mag)); yp -= 0.025
-            yaz(yp, r"Formül: $v = \sqrt{\vec{v} \cdot \vec{v}} \quad \rightarrow \quad v = \sqrt{(%.4f)^2 + (%.4f)^2 + (%.4f)^2} = %.4f \ km/s$" % (V_vec[0], V_vec[1], V_vec[2], v_mag)); yp -= 0.025
-            yaz(yp, r"Formül: $v_r = \frac{\vec{r} \cdot \vec{v}}{r} \quad \rightarrow \quad v_r = \frac{(%.2f)(%.4f) + (%.2f)(%.4f) + (%.2f)(%.4f)}{%.4f} = %.4f \ km/s$" % (R_vec[0], V_vec[0], R_vec[1], V_vec[1], R_vec[2], V_vec[2], r_mag, vr)); yp -= 0.035
+            yaz(yp, r"Formül: $r = \sqrt{\vec{r} \cdot \vec{r}} \quad \rightarrow \quad r = \sqrt{(%.2f)^2 + (%.2f)^2 + (%.2f)^2} = %.4f \, \mathrm{km}$" % (R_vec[0], R_vec[1], R_vec[2], r_mag)); yp -= 0.025
+            yaz(yp, r"Formül: $v = \sqrt{\vec{v} \cdot \vec{v}} \quad \rightarrow \quad v = \sqrt{(%.4f)^2 + (%.4f)^2 + (%.4f)^2} = %.4f \, \mathrm{km/s}$" % (V_vec[0], V_vec[1], V_vec[2], v_mag)); yp -= 0.025
+            yaz(yp, r"Formül: $v_r = \frac{\vec{r} \cdot \vec{v}}{r} \quad \rightarrow \quad v_r = \frac{(%.2f)(%.4f) + (%.2f)(%.4f) + (%.2f)(%.4f)}{%.4f} = %.4f \, \mathrm{km/s}$" % (R_vec[0], V_vec[0], R_vec[1], V_vec[1], R_vec[2], V_vec[2], r_mag, vr)); yp -= 0.035
             
             yaz(yp, "ADIM 2: Özgül Açısal Momentum Vektörü", bold=True, fs=10, renk=C_ALT); yp -= 0.025
-            yaz(yp, r"Formül: $\vec{h} = \vec{r} \times \vec{v} = \begin{vmatrix} \hat{i} & \hat{j} & \hat{k} \\ %.2f & %.2f & %.2f \\ %.4f & %.4f & %.4f \end{vmatrix}$" % (R_vec[0], R_vec[1], R_vec[2], V_vec[0], V_vec[1], V_vec[2])); yp -= 0.04
-            yaz(yp, r"Hesap: $\vec{h} = %.4f\hat{i} %s %.4f\hat{j} %s %.4f\hat{k} \ km^2/s$" % (H_vec[0], '+' if H_vec[1]>=0 else '-', abs(H_vec[1]), '+' if H_vec[2]>=0 else '-', abs(H_vec[2]))); yp -= 0.025
-            yaz(yp, r"Formül: $h = \sqrt{\vec{h} \cdot \vec{h}} \quad \rightarrow \quad h = \sqrt{(%.2f)^2 + (%.2f)^2 + (%.2f)^2} = %.4f \ km^2/s$" % (H_vec[0], H_vec[1], H_vec[2], h_mag)); yp -= 0.035
+            yaz(yp, r"Formül: $\vec{h} = \vec{r} \times \vec{v} = \left| \matrix{ \hat{i} & \hat{j} & \hat{k} \\ %.2f & %.2f & %.2f \\ %.4f & %.4f & %.4f } \right|$" % (R_vec[0], R_vec[1], R_vec[2], V_vec[0], V_vec[1], V_vec[2])); yp -= 0.04
+            yaz(yp, r"Hesap: $\vec{h} = %.4f\hat{i} %s %.4f\hat{j} %s %.4f\hat{k} \, \mathrm{km}^2/\mathrm{s}$" % (H_vec[0], '+' if H_vec[1]>=0 else '-', abs(H_vec[1]), '+' if H_vec[2]>=0 else '-', abs(H_vec[2]))); yp -= 0.025
+            yaz(yp, r"Formül: $h = \sqrt{\vec{h} \cdot \vec{h}} \quad \rightarrow \quad h = \sqrt{(%.2f)^2 + (%.2f)^2 + (%.2f)^2} = %.4f \, \mathrm{km}^2/\mathrm{s}$" % (H_vec[0], H_vec[1], H_vec[2], h_mag)); yp -= 0.035
             
             yaz(yp, "ADIM 3: Eğiklik (i) ve Çıkış Düğümü (Ω)", bold=True, fs=10, renk=C_ALT); yp -= 0.025
             yaz(yp, r"Formül: $i = \arccos(h_z / h) \quad \rightarrow \quad i = \arccos(%.4f / %.4f) = %.4f^\circ$" % (H_vec[2], h_mag, i)); yp -= 0.03
-            yaz(yp, r"Formül: $\vec{N} = \hat{k} \times \vec{h} = \begin{vmatrix} \hat{i} & \hat{j} & \hat{k} \\ 0 & 0 & 1 \\ %.2f & %.2f & %.2f \end{vmatrix}$" % (H_vec[0], H_vec[1], H_vec[2])); yp -= 0.04
+            yaz(yp, r"Formül: $\vec{N} = \hat{k} \times \vec{h} = \left| \matrix{ \hat{i} & \hat{j} & \hat{k} \\ 0 & 0 & 1 \\ %.2f & %.2f & %.2f } \right|$" % (H_vec[0], H_vec[1], H_vec[2])); yp -= 0.04
             yaz(yp, r"Hesap: $\vec{N} = -(%.4f)\hat{i} + (%.4f)\hat{j} = %.4f\hat{i} %s %.4f\hat{j}$" % (H_vec[1], H_vec[0], N_vec[0], '+' if N_vec[1]>=0 else '-', abs(N_vec[1]))); yp -= 0.025
             yaz(yp, r"Formül: $n = \sqrt{\vec{N} \cdot \vec{N}} \quad \rightarrow \quad n = \sqrt{(%.4f)^2 + (%.4f)^2} = %.4f$" % (N_vec[0], N_vec[1], n_mag)); yp -= 0.025
             yaz(yp, r"Formül: $\Omega = \arccos(N_x / n) \quad \rightarrow \quad \Omega = \arccos(%.4f / %.4f) = %.4f^\circ$" % (N_vec[0], n_mag, W)); yp -= 0.035
             
             yaz(yp, "ADIM 4: Dışmerkezlik Vektörü (e) ve Enberi Argümanı (ω)", bold=True, fs=10, renk=C_ALT); yp -= 0.025
             yaz(yp, r"Formül: $\vec{e} = \frac{1}{\mu} \left[ (v^2 - \frac{\mu}{r})\vec{r} - r v_r \vec{v} \right]$", renk='#444444'); yp -= 0.025
-            yaz(yp, r"Hesap: $\vec{e} = \frac{1}{%.2f} \left[ (%.4f^2 - \frac{%.2f}{%.4f})\vec{r} - (%.4f)(%.4f)\vec{v} \right]$" % (mu, v_mag, mu, r_mag, r_mag, vr)); yp -= 0.025
+            yaz(yp, r"Hesap: $\vec{e} = \frac{1}{%.2f} \left[ ((%.4f)^2 - \frac{%.2f}{%.4f})\vec{r} - (%.4f)(%.4f)\vec{v} \right]$" % (mu, v_mag, mu, r_mag, r_mag, vr)); yp -= 0.025
             yaz(yp, r"Hesap: $\vec{e} = %.5f\hat{i} %s %.5f\hat{j} %s %.5f\hat{k}$" % (E_vec[0], '+' if E_vec[1]>=0 else '-', abs(E_vec[1]), '+' if E_vec[2]>=0 else '-', abs(E_vec[2]))); yp -= 0.025
             yaz(yp, r"Formül: $e = \sqrt{\vec{e} \cdot \vec{e}} \quad \rightarrow \quad e = \sqrt{(%.5f)^2 + (%.5f)^2 + (%.5f)^2} = %.5f$" % (E_vec[0], E_vec[1], E_vec[2], e)); yp -= 0.025
             yaz(yp, r"Formül: $\omega = \arccos \left( \frac{\vec{N} \cdot \vec{e}}{n e} \right) \quad \rightarrow \quad \omega = \arccos \left( \frac{%.4f}{(%.4f)(%.5f)} \right) = %.4f^\circ$" % (np.dot(N_vec, E_vec), n_mag, e, w)); yp -= 0.035
             
             yaz(yp, "ADIM 5: Gerçek Anomali (ν) ve Yarı-Büyük Eksen (a)", bold=True, fs=10, renk=C_ALT); yp -= 0.025
             yaz(yp, r"Formül: $\nu = \arccos \left( \frac{\vec{e} \cdot \vec{r}}{e r} \right) \quad \rightarrow \quad \nu = \arccos \left( \frac{%.4f}{(%.5f)(%.4f)} \right) = %.4f^\circ$" % (np.dot(E_vec, R_vec), e, r_mag, nu)); yp -= 0.025
-            yaz(yp, r"Formül: $a = \frac{h^2}{\mu(1 - e^2)} \quad \rightarrow \quad a = \frac{%.4f^2}{%.2f(1 - %.5f^2)} = %.2f \ km$" % (h_mag, mu, e, a)); yp -= 0.03
+            yaz(yp, r"Formül: $a = \frac{h^2}{\mu(1 - e^2)} \quad \rightarrow \quad a = \frac{(%.4f)^2}{%.2f(1 - (%.5f)^2)} = %.2f \, \mathrm{km}$" % (h_mag, mu, e, a)); yp -= 0.03
             
         else:
-            # Eleman Modu
             yaz(yp, "PROBLEM: Yörünge Elemanlarından Durum Vektörlerinin Bulunması", fs=11, bold=True, renk=C_ALT); yp -= 0.03
             
             yaz(yp, "VERİLENLER:", fs=10, bold=True, renk=C_BASLIK); yp -= 0.025
-            yaz(yp, r"$\mu = %.4f \ km^3/s^2$" % mu); yp -= 0.025
-            yaz(yp, r"$a = %.2f \ km, \quad e = %.4f, \quad i = %.2f^\circ$" % (a, e, i)); yp -= 0.025
+            yaz(yp, r"$\mu = %.4f \, \mathrm{km}^3/\mathrm{s}^2$" % mu); yp -= 0.025
+            yaz(yp, r"$a = %.2f \, \mathrm{km}, \quad e = %.4f, \quad i = %.2f^\circ$" % (a, e, i)); yp -= 0.025
             yaz(yp, r"$\Omega = %.2f^\circ, \quad \omega = %.2f^\circ, \quad \nu = %.2f^\circ$" % (W, w, nu)); yp -= 0.04
             
             yaz(yp, "ADIM 1: Perifokal Düzlemdeki Uzaklık ve Koordinatlar", bold=True); yp -= 0.025
             p_val = a * (1 - e**2)
-            yaz(yp, r"Formül: $p = a(1 - e^2) \quad \rightarrow \quad p = %.2f(1 - %.4f^2) = %.2f \ km$" % (a, e, p_val)); yp -= 0.025
-            yaz(yp, r"Formül: $r = \frac{p}{1 + e \cos\nu} \quad \rightarrow \quad r = \frac{%.2f}{1 + %.4f \cos(%.2f^\circ)} = %.2f \ km$" % (p_val, e, nu, r_mag)); yp -= 0.03
-            yaz(yp, r"Formül: $\bar{x} = r \cos\nu \quad \rightarrow \quad \bar{x} = %.2f \cos(%.2f^\circ) = %.2f \ km$" % (r_mag, nu, r_mag * np.cos(np.radians(nu)))); yp -= 0.025
-            yaz(yp, r"Formül: $\bar{y} = r \sin\nu \quad \rightarrow \quad \bar{y} = %.2f \sin(%.2f^\circ) = %.2f \ km$" % (r_mag, nu, r_mag * np.sin(np.radians(nu)))); yp -= 0.035
+            yaz(yp, r"Formül: $p = a(1 - e^2) \quad \rightarrow \quad p = %.2f(1 - (%.4f)^2) = %.2f \, \mathrm{km}$" % (a, e, p_val)); yp -= 0.025
+            yaz(yp, r"Formül: $r = \frac{p}{1 + e \cos\nu} \quad \rightarrow \quad r = \frac{%.2f}{1 + %.4f \cos(%.2f^\circ)} = %.2f \, \mathrm{km}$" % (p_val, e, nu, r_mag)); yp -= 0.03
+            yaz(yp, r"Formül: $\bar{x} = r \cos\nu \quad \rightarrow \quad \bar{x} = %.2f \cos(%.2f^\circ) = %.2f \, \mathrm{km}$" % (r_mag, nu, r_mag * np.cos(np.radians(nu)))); yp -= 0.025
+            yaz(yp, r"Formül: $\bar{y} = r \sin\nu \quad \rightarrow \quad \bar{y} = %.2f \sin(%.2f^\circ) = %.2f \, \mathrm{km}$" % (r_mag, nu, r_mag * np.sin(np.radians(nu)))); yp -= 0.035
 
             yaz(yp, "ADIM 2: Perifokal Düzlemdeki Hız Bileşenleri", bold=True); yp -= 0.025
             h_val = np.sqrt(mu * p_val)
-            yaz(yp, r"Formül: $h = \sqrt{\mu p} \quad \rightarrow \quad h = \sqrt{%.2f \times %.2f} = %.2f \ km^2/s$" % (mu, p_val, h_val)); yp -= 0.025
-            yaz(yp, r"Formül: $\bar{v}_x = -\frac{\mu}{h} \sin\nu \quad \rightarrow \quad \bar{v}_x = -\frac{%.2f}{%.2f} \sin(%.2f^\circ) = %.4f \ km/s$" % (mu, h_val, nu, -(mu/h_val)*np.sin(np.radians(nu)))); yp -= 0.025
-            yaz(yp, r"Formül: $\bar{v}_y = \frac{\mu}{h} (e + \cos\nu) \quad \rightarrow \quad \bar{v}_y = \frac{%.2f}{%.2f} (%.4f + \cos(%.2f^\circ)) = %.4f \ km/s$" % (mu, h_val, e, nu, (mu/h_val)*(e + np.cos(np.radians(nu))))); yp -= 0.04
+            yaz(yp, r"Formül: $h = \sqrt{\mu p} \quad \rightarrow \quad h = \sqrt{%.2f \times %.2f} = %.2f \, \mathrm{km}^2/\mathrm{s}$" % (mu, p_val, h_val)); yp -= 0.025
+            yaz(yp, r"Formül: $\bar{v}_x = -\frac{\mu}{h} \sin\nu \quad \rightarrow \quad \bar{v}_x = -\frac{%.2f}{%.2f} \sin(%.2f^\circ) = %.4f \, \mathrm{km/s}$" % (mu, h_val, nu, -(mu/h_val)*np.sin(np.radians(nu)))); yp -= 0.025
+            yaz(yp, r"Formül: $\bar{v}_y = \frac{\mu}{h} (e + \cos\nu) \quad \rightarrow \quad \bar{v}_y = \frac{%.2f}{%.2f} (%.4f + \cos(%.2f^\circ)) = %.4f \, \mathrm{km/s}$" % (mu, h_val, e, nu, (mu/h_val)*(e + np.cos(np.radians(nu))))); yp -= 0.04
 
             yaz(yp, "ADIM 3: 3B Ekvatoryal Uzaya Dönüşüm Matrisi (Euler Açıları)", bold=True); yp -= 0.025
             yaz(yp, r"Formül: $R_{313}(\Omega, i, \omega) = R_3(-\Omega) R_1(-i) R_3(-\omega)$"); yp -= 0.03
             yaz(yp, r"Dönüşüm sonrasında Ekvatoryal Uzaydaki (X, Y, Z) Durum Vektörleri:"); yp -= 0.025
-            yaz(yp, r"Hesap: $\vec{R} = [%.2f, \ %.2f, \ %.2f] \ km$" % (R_vec[0], R_vec[1], R_vec[2])); yp -= 0.025
-            yaz(yp, r"Hesap: $\vec{V} = [%.4f, \ %.4f, \ %.4f] \ km/s$" % (V_vec[0], V_vec[1], V_vec[2])); yp -= 0.04
+            yaz(yp, r"Hesap: $\vec{R} = [%.2f, \ %.2f, \ %.2f] \, \mathrm{km}$" % (R_vec[0], R_vec[1], R_vec[2])); yp -= 0.025
+            yaz(yp, r"Hesap: $\vec{V} = [%.4f, \ %.4f, \ %.4f] \, \mathrm{km/s}$" % (V_vec[0], V_vec[1], V_vec[2])); yp -= 0.04
             
         pdf.savefig(fig1, dpi=220)
         plt.close(fig1)
