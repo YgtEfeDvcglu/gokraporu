@@ -809,60 +809,64 @@ elif st.session_state.secim == "jenerik_manuel":
     with tab_zaman:
         st.markdown("**(Kepler Çözücü)** - Başlangıç tarihindeki elemanlardan yola çıkarak hedef tarihteki konumu hesaplayın.")
         col_z1, col_z2 = st.columns(2)
-        t0_in = col_z1.number_input("Başlangıç Tarihi (t0) [Julian Günü]", value=2452399.5, format="%g", step=1.0)
-        t_in = col_z2.number_input("Hedef Tarih (t) [Julian Günü]", value=2452469.5, format="%g", step=1.0)
+        t0_in = col_z1.number_input("Başlangıç Tarihi (t0) [Julian Günü]", value=None, placeholder="2452399.5", format="%g", step=1.0)
+        t_in = col_z2.number_input("Hedef Tarih (t) [Julian Günü]", value=None, placeholder="2452469.5", format="%g", step=1.0)
         
         col_z4, col_z5 = st.columns(2)
-        M0_in = col_z4.number_input("Ortalama Anomali (M0) [°]", value=189.275, format="%g")
-        n_in = col_z5.number_input("Ort. Hareket (n) [°/gün]", value=0.2148025, format="%g")
+        M0_in = col_z4.number_input("Ortalama Anomali (M0) [°]", value=None, placeholder="189.275", format="%g")
+        n_in = col_z5.number_input("Ort. Hareket (n) [°/gün]", value=None, placeholder="0.2148025", format="%g")
 
         col_z6, col_z7, col_z8 = st.columns(3)
-        a_z = col_z6.number_input("Yarı-Büyük Eksen (a) [AB veya km]", value=2.7664122, format="%g")
-        e_z = col_z7.number_input("Dışmerkezlik (e)", value=0.0781158, format="%g")
-        i_z = col_z8.number_input("Eğiklik (i) [°]", value=10.58347, format="%g")
+        a_z = col_z6.number_input("Yarı-Büyük Eksen (a) [AB veya km]", value=None, placeholder="2.76641", format="%g")
+        e_z = col_z7.number_input("Dışmerkezlik (e)", value=None, placeholder="0.0781", format="%g")
+        i_z = col_z8.number_input("Eğiklik (i) [°]", value=None, placeholder="10.58", format="%g")
 
         col_z9, col_z10 = st.columns(2)
-        W_z = col_z9.number_input("Çıkış Düğümü (Ω) [°]", value=80.48632, format="%g")
-        w_z = col_z10.number_input("Enberi Arg. (ω) [°]", value=73.9844, format="%g")
+        W_z = col_z9.number_input("Çıkış Düğümü (Ω) [°]", value=None, placeholder="80.48", format="%g")
+        w_z = col_z10.number_input("Enberi Arg. (ω) [°]", value=None, placeholder="73.98", format="%g")
 
         if st.button("Zamanda İlerlet ve Çöz", type="primary"):
-            with st.spinner("Kepler denklemi N-R metoduyla iteratif olarak çözülüyor..."):
-                M0_rad = np.radians(M0_in)
-                n_rad = np.radians(n_in)
-                M_hedef_rad = M0_rad + n_rad * dt_in
-                M_hedef_deg = np.degrees(M_hedef_rad) % 360
+            if None in [t0_in, t_in, M0_in, n_in, a_z, e_z, i_z, W_z, w_z]:
+                st.warning("⚠️ Lütfen hesaplama ve rapor için tüm zaman ve yörünge parametrelerini doldurun.")
+            else:
+                with st.spinner("Kepler denklemi N-R metoduyla iteratif olarak çözülüyor..."):
+                    dt_in = t_in - t0_in
+                    M0_rad = np.radians(M0_in)
+                    n_rad = np.radians(n_in)
+                    M_hedef_rad = M0_rad + n_rad * dt_in
+                    M_hedef_deg = np.degrees(M_hedef_rad) % 360
 
-                iterasyonlar = []
-                M_mod = M_hedef_rad % (2*np.pi)
-                E_i = M_mod + e_z/2 if M_mod < np.pi else M_mod - e_z/2
-                for _ in range(15):
-                    f_E = E_i - e_z * np.sin(E_i) - M_mod
-                    fp_E = 1 - e_z * np.cos(E_i)
-                    iterasyonlar.append((E_i, f_E, fp_E))
-                    delta = f_E / fp_E
-                    E_i -= delta
-                    if abs(delta) < 1e-7:
-                        iterasyonlar.append((E_i, E_i - e_z * np.sin(E_i) - M_mod, 1 - e_z * np.cos(E_i)))
-                        break
-                
-                nu_rad = 2 * np.arctan2(np.sqrt(1+e_z)*np.sin(E_i/2), np.sqrt(1-e_z)*np.cos(E_i/2))
-                nu_deg = np.degrees(nu_rad) % 360
-                
-                zaman_dict = {
-                    "t0": t0_in if t0_in else "t0",
-                    "t": t_in if t_in else "t",
-                    "dt": dt_in,
-                    "M0": M0_in,
-                    "n": n_in,
-                    "M_hedef": M_hedef_deg,
-                    "iterasyonlar": iterasyonlar,
-                    "E_rad": E_i
-                }
-                
-                R_out, V_out, r_mag = eleman_to_vektor(a_z, e_z, i_z, W_z, w_z, nu_deg, mu_val)
-                st.success(f"Hesaplanan Gerçek Anomali: ν = {nu_deg:.4f}°\nR: [{R_out[0]:.4f}, {R_out[1]:.4f}, {R_out[2]:.4f}]")
-                st.session_state.aktif_fig = plotly_3d_ciz_jenerik(a_z, e_z, i_z, W_z, w_z, nu_deg, mu_val, "Uydu/Cisim", merkez_isim_etiket)
-                st.session_state.aktif_pdf_jenerik = pdf_olustur_jenerik(a_z, e_z, i_z, W_z, w_z, nu_deg, mu_val, R_out, V_out, "Uydu/Cisim", merkez_isim_etiket, mod="zaman", zaman_dict=zaman_dict)
+                    iterasyonlar = []
+                    M_mod = M_hedef_rad % (2*np.pi)
+                    E_i = M_mod + e_z/2 if M_mod < np.pi else M_mod - e_z/2
+                    for _ in range(15):
+                        f_E = E_i - e_z * np.sin(E_i) - M_mod
+                        fp_E = 1 - e_z * np.cos(E_i)
+                        iterasyonlar.append((E_i, f_E, fp_E))
+                        delta = f_E / fp_E
+                        E_i -= delta
+                        if abs(delta) < 1e-7:
+                            iterasyonlar.append((E_i, E_i - e_z * np.sin(E_i) - M_mod, 1 - e_z * np.cos(E_i)))
+                            break
+                    
+                    nu_rad = 2 * np.arctan2(np.sqrt(1+e_z)*np.sin(E_i/2), np.sqrt(1-e_z)*np.cos(E_i/2))
+                    nu_deg = np.degrees(nu_rad) % 360
+                    
+                    zaman_dict = {
+                        "t0": f"{t0_in:g} JD",
+                        "t": f"{t_in:g} JD",
+                        "dt": dt_in,
+                        "M0": M0_in,
+                        "n": n_in,
+                        "M_hedef": M_hedef_deg,
+                        "iterasyonlar": iterasyonlar,
+                        "E_rad": E_i
+                    }
+                    
+                    R_out, V_out, r_mag = eleman_to_vektor(a_z, e_z, i_z, W_z, w_z, nu_deg, mu_val)
+                    st.success(f"Hesaplanan Gerçek Anomali: ν = {nu_deg:.4f}°\nR: [{R_out[0]:.4f}, {R_out[1]:.4f}, {R_out[2]:.4f}]")
+                    st.session_state.aktif_fig = plotly_3d_ciz_jenerik(a_z, e_z, i_z, W_z, w_z, nu_deg, mu_val, "Uydu/Cisim", merkez_isim_etiket)
+                    st.session_state.aktif_pdf_jenerik = pdf_olustur_jenerik(a_z, e_z, i_z, W_z, w_z, nu_deg, mu_val, R_out, V_out, "Uydu/Cisim", merkez_isim_etiket, mod="zaman", zaman_dict=zaman_dict)
     if "aktif_fig" in st.session_state and st.session_state.secim == "jenerik_manuel":
         st.plotly_chart(st.session_state.aktif_fig, use_container_width=True)
         
