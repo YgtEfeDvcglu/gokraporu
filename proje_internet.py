@@ -422,7 +422,7 @@ def pdf_olustur(a, e, P, tau, cisim_ismi):
     return pdf_buffer
 
 
-def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_ismi, mod="vektor", girdi_tipi="a"):
+def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_ismi, mod="vektor", zaman_dict=None):
     C_BASLIK, C_ALT, C_KOYU = '#1a2940', '#2e6da4', '#111111'
     FW, FH = 8.27, 11.69
     
@@ -509,7 +509,43 @@ def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_
             yaz(yp, r"Formül: $\sin\delta = \frac{Z}{r} \quad \rightarrow \quad \delta = \arcsin\left(\frac{%.2f}{%.2f}\right) = %.4f^\circ$" % (R_vec[2], r_mag, delta_deg)); yp -= 0.02
             yaz(yp, r"Formül: $\tan\alpha = \frac{Y}{X} \quad \rightarrow \quad \alpha = \mathrm{arctan2}(%.2f, \ %.2f) = %.4f^\circ$" % (R_vec[1], R_vec[0], alpha_deg)); yp -= 0.03
             
-        else:
+        elif mod == "zaman":
+            yaz(yp, "PROBLEM: Zamana Bağlı Efemeris ve Kepler Denklemi Çözümü", fs=11, bold=True, renk=C_ALT); yp -= 0.03
+            
+            yaz(yp, "VERİLENLER:", bold=True, renk=C_BASLIK); yp -= 0.02
+            t0_str, t_str = zaman_dict["t0"], zaman_dict["t"]
+            M0, n_hareket, dt = zaman_dict["M0"], zaman_dict["n"], zaman_dict["dt"]
+            
+            yaz(yp, r"$a = %.4f, \quad e = %.5f, \quad i = %.2f^\circ$" % (a, e, i)); yp -= 0.02
+            yaz(yp, r"$\Omega = %.2f^\circ, \quad \omega = %.2f^\circ$" % (W, w)); yp -= 0.02
+            yaz(yp, r"$t_0 = \text{%s}, \quad t = \text{%s}$" % (t0_str, t_str)); yp -= 0.02
+            yaz(yp, r"$M_0 = %.4f^\circ, \quad n = %.6f^\circ/\text{gün}$" % (M0, n_hareket)); yp -= 0.035
+            
+            yaz(yp, "ADIM 1: Zaman Farkı ve Hedef Ortalama Anomali (M)", bold=True, renk=C_ALT); yp -= 0.02
+            M_hedef = zaman_dict["M_hedef"]
+            yaz(yp, r"Formül: $\Delta t = t - t_0 \quad \rightarrow \quad \Delta t = %.4f \ \text{gün}$" % dt); yp -= 0.02
+            yaz(yp, r"Formül: $M = M_0 + n \cdot \Delta t \quad \rightarrow \quad M = %.4f^\circ + (%.6f)(%.4f) = %.4f^\circ$" % (M0, n_hareket, dt, M_hedef)); yp -= 0.035
+            
+            yaz(yp, "ADIM 2: Kepler Denkleminin Çözümü (E)", bold=True, renk=C_ALT); yp -= 0.02
+            yaz(yp, r"Denklem: $M = E - e \sin E \quad$ (Newton-Raphson İterasyonu)"); yp -= 0.02
+            for idx, iter_val in enumerate(zaman_dict["iterasyonlar"][:3]):
+                Ei, fE, fpE = iter_val
+                yaz(yp, r"$E_{%d} = %.6f \ \text{rad} \rightarrow f(E_{%d}) = %.6f, \ f'(E_{%d}) = %.6f$" % (idx, Ei, idx, fE, idx, fpE)); yp -= 0.02
+            yaz(yp, r"Sonuç: $E = %.6f \ \text{rad} = %.4f^\circ$" % (zaman_dict["E_rad"], np.degrees(zaman_dict["E_rad"]))); yp -= 0.035
+
+            yaz(yp, "ADIM 3: Gerçek Anomali (ν) ve Uzaklık (r)", bold=True, renk=C_ALT); yp -= 0.02
+            yaz(yp, r"Formül: $\tan\left(\frac{\nu}{2}\right) = \sqrt{\frac{1+e}{1-e}} \tan\left(\frac{E}{2}\right) \quad \rightarrow \quad \nu = %.4f^\circ$" % nu); yp -= 0.02
+            yaz(yp, r"Formül: $r = a(1 - e \cos E) \quad \rightarrow \quad r = %.4f$" % r_mag); yp -= 0.035
+
+            yaz(yp, "ADIM 4: Perifokal Düzlem ve Durum Vektörleri", bold=True, renk=C_ALT); yp -= 0.02
+            yaz(yp, r"$\vec{R} = " + v_str(R_vec, 4) + r"$"); yp -= 0.02
+            yaz(yp, r"$\vec{V} = " + v_str(V_vec, 6) + r"$"); yp -= 0.035
+            
+            yaz(yp, "ADIM 5: Eşlek Koordinatlara Geçiş (Sağ Açıklık ve Dik Açıklık)", bold=True, renk=C_ALT); yp -= 0.02
+            yaz(yp, r"Formül: $\sin\delta = \frac{Z}{r} \quad \rightarrow \quad \delta = \arcsin\left(\frac{%.4f}{%.4f}\right) = %.4f^\circ$" % (R_vec[2], r_mag, delta_deg)); yp -= 0.02
+            yaz(yp, r"Formül: $\tan\alpha = \frac{Y}{X} \quad \rightarrow \quad \alpha = \mathrm{arctan2}(%.4f, \ %.4f) = %.4f^\circ$" % (R_vec[1], R_vec[0], alpha_deg)); yp -= 0.03
+
+        elif mod == "eleman":
             yaz(yp, "PROBLEM: Yörünge Elemanlarından Durum Vektörlerinin Bulunması", fs=11, bold=True, renk=C_ALT); yp -= 0.03
             yaz(yp, f"VERİLENLER:", bold=True, renk=C_BASLIK); yp -= 0.02 
             yaz(yp, f"μ = {mu} km³/s²"); yp -= 0.02
