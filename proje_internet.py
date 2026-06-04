@@ -477,43 +477,32 @@ def pdf_olustur_jenerik(a, e, i, W, w, nu, mu, R_vec, V_vec, cisim_ismi, merkez_
             yaz(yp, r"Formül: $r = \sqrt{\vec{r} \cdot \vec{r}} \quad \rightarrow \quad r = \sqrt{(%.2f)^2 + (%.2f)^2 + (%.2f)^2} = %.4f \ km$" % (R_vec[0], R_vec[1], R_vec[2], r_mag)); yp -= 0.02
             yaz(yp, r"Formül: $v = \sqrt{\vec{v} \cdot \vec{v}} \quad \rightarrow \quad v = \sqrt{(%.4f)^2 + (%.4f)^2 + (%.4f)^2} = %.4f \ km/s$" % (V_vec[0], V_vec[1], V_vec[2], v_mag)); yp -= 0.02
             vr_yorum = "Cisim enberiden uzaklaşıyor" if vr > 0 else ("Cisim enberiye yaklaşıyor" if vr < 0 else "Teğet geçiş")
-            yaz(yp, r"Formül: $v_r = \frac{\vec{r} \cdot \vec{v}}{r} \quad \rightarrow \quad v_r = %.4f \ km/s \quad (\text{%s})$" % (vr, vr_yorum)); yp -= 0.035
+            yaz(yp, r"Formül: $v_r = \frac{\vec{r} \cdot \vec{v}}{r} \quad \rightarrow \quad v_r = %.4f \ km/s \quad $ (%s)" % (vr, vr_yorum)); yp -= 0.035
             
             yaz(yp, "ADIM 2: Özgül Açısal Momentum Vektörü (h)", bold=True, renk=C_ALT); yp -= 0.02
-            mat_h = (
-                f"|     i          j          k     |\n"
-                f"| {R_vec[0]:>10.2f} {R_vec[1]:>10.2f} {R_vec[2]:>10.2f}  |\n"
-                f"| {V_vec[0]:>10.4f} {V_vec[1]:>10.4f} {V_vec[2]:>10.4f}  |"
-            )
-            yaz(yp, "Formül: Çapraz Çarpım Matrisi"); yp -= 0.02
-            ax1.text(0.08, yp, mat_h, family='monospace', fontsize=9, color=C_KOYU, va='top'); yp -= 0.055
+            yaz(yp, r"Formül: $\vec{h} = \vec{r} \times \vec{v} = (y v_z - z v_y)\hat{i} + (z v_x - x v_z)\hat{j} + (x v_y - y v_x)\hat{k}$"); yp -= 0.02
             yaz(yp, r"Hesap: $\vec{h} = " + v_str(H_vec, 4) + r" \quad (km^2/s)$"); yp -= 0.02
             yaz(yp, r"Formül: $h = \sqrt{\vec{h} \cdot \vec{h}} = %.4f \ km^2/s$" % h_mag); yp -= 0.035
             
             yaz(yp, "ADIM 3: Eğiklik (i) ve Çıkış Düğümü (Ω)", bold=True, renk=C_ALT); yp -= 0.02
             i_yorum = "Retrograt (Ters)" if i > 90 else "Prograt (Düz)"
-            yaz(yp, r"Formül: $i = \arccos(h_z / h) \quad \rightarrow \quad i = \arccos(%.4f / %.4f) = %.4f^\circ \quad (\text{%s})$" % (H_vec[2], h_mag, i, i_yorum)); yp -= 0.025
-            mat_n = (
-                f"|     i          j          k     |\n"
-                f"|       0.00       0.00       1.00  |\n"
-                f"| {H_vec[0]:>10.2f} {H_vec[1]:>10.2f} {H_vec[2]:>10.2f}  |"
-            )
-            ax1.text(0.08, yp, mat_n, family='monospace', fontsize=9, color=C_KOYU, va='top'); yp -= 0.055
+            yaz(yp, r"Formül: $i = \arccos(h_z / h) \quad \rightarrow \quad i = \arccos(%.4f / %.4f) = %.4f^\circ \quad $ (%s)" % (H_vec[2], h_mag, i, i_yorum)); yp -= 0.025
+            yaz(yp, r"Formül: $\vec{N} = \hat{k} \times \vec{h} = -h_y\hat{i} + h_x\hat{j}$"); yp -= 0.02
             yaz(yp, r"Hesap: $\vec{N} = " + v_str(N_vec, 4) + r"$"); yp -= 0.02
             yaz(yp, r"Formül: $n = \sqrt{\vec{N} \cdot \vec{N}} = %.4f$" % n_mag); yp -= 0.02
-            W_yorum = "N_y < 0 olduğu için 360°'den çıkarıldı" if N_vec[1] < 0 else "N_y \geq 0 direkt alındı"
-            yaz(yp, r"Formül: $\Omega = \arccos(N_x / n) \quad \rightarrow \quad \Omega = %.4f^\circ \quad (\text{%s})$" % (W, W_yorum)); yp -= 0.035
+            W_yorum = r"$N_y < 0$ olduğu için $360^\circ$'den çıkarıldı" if N_vec[1] < 0 else r"$N_y \geq 0$ olduğu için direkt alındı"
+            yaz(yp, r"Formül: $\Omega = \arccos(N_x / n) \quad \rightarrow \quad \Omega = %.4f^\circ \quad $ (%s)" % (W, W_yorum)); yp -= 0.035
             
             yaz(yp, "ADIM 4: Dışmerkezlik (e) ve Enberi Argümanı (ω)", bold=True, renk=C_ALT); yp -= 0.02
-            yaz(yp, r"Formül: $\vec{e} = \frac{1}{\mu} \left[ (v^2 - \frac{\mu}{r})\vec{r} - r v_r \vec{v} \right]$", renk='#444444'); yp -= 0.02
+            yaz(yp, r"Formül: $\vec{e} = \frac{1}{\mu} \left[ (v^2 - \frac{\mu}{r})\vec{r} - r v_r \vec{v} \right]$"); yp -= 0.02
             yaz(yp, r"Hesap: $\vec{e} = " + v_str(E_vec, 5) + r"$"); yp -= 0.02
             yaz(yp, r"Formül: $e = \sqrt{\vec{e} \cdot \vec{e}} = %.5f$" % e); yp -= 0.02
-            w_yorum = "e_z < 0 olduğu için 360°'den çıkarıldı" if E_vec[2] < 0 else "e_z \geq 0 direkt alındı"
-            yaz(yp, r"Formül: $\omega = \arccos \left( \frac{\vec{N} \cdot \vec{e}}{n e} \right) \quad \rightarrow \quad \omega = %.4f^\circ \quad (\text{%s})$" % (w, w_yorum)); yp -= 0.035
+            w_yorum = r"$e_z < 0$ olduğu için $360^\circ$'den çıkarıldı" if E_vec[2] < 0 else r"$e_z \geq 0$ olduğu için direkt alındı"
+            yaz(yp, r"Formül: $\omega = \arccos \left( \frac{\vec{N} \cdot \vec{e}}{n e} \right) \quad \rightarrow \quad \omega = %.4f^\circ \quad $ (%s)" % (w, w_yorum)); yp -= 0.035
             
             yaz(yp, "ADIM 5: Gerçek Anomali (ν) ve Yarı-Büyük Eksen (a)", bold=True, renk=C_ALT); yp -= 0.02
-            nu_yorum = "v_r < 0 olduğu için 360°'den çıkarıldı" if vr < 0 else "v_r \geq 0 direkt alındı"
-            yaz(yp, r"Formül: $\nu = \arccos \left( \frac{\vec{e} \cdot \vec{r}}{e r} \right) \quad \rightarrow \quad \nu = %.4f^\circ \quad (\text{%s})$" % (nu, nu_yorum)); yp -= 0.02
+            nu_yorum = r"$v_r < 0$ olduğu için $360^\circ$'den çıkarıldı" if vr < 0 else r"$v_r \geq 0$ olduğu için direkt alındı"
+            yaz(yp, r"Formül: $\nu = \arccos \left( \frac{\vec{e} \cdot \vec{r}}{e r} \right) \quad \rightarrow \quad \nu = %.4f^\circ \quad $ (%s)" % (nu, nu_yorum)); yp -= 0.02
             yaz(yp, r"Formül: $a = \frac{h^2}{\mu(1 - e^2)} \quad \rightarrow \quad a = %.2f \ km$" % a); yp -= 0.035
             
             yaz(yp, "ADIM 6: Eşlek Koordinatlara Geçiş (Sağ Açıklık ve Dik Açıklık)", bold=True, renk=C_ALT); yp -= 0.02
