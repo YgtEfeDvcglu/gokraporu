@@ -809,11 +809,10 @@ elif st.session_state.secim == "jenerik_manuel":
     with tab_zaman:
         st.markdown("**(Kepler Çözücü)** - Başlangıç tarihindeki elemanlardan yola çıkarak hedef tarihteki konumu hesaplayın.")
         col_z1, col_z2 = st.columns(2)
-        t0_in = col_z1.text_input("Başlangıç Tarihi (t0)", value="06.05.2002 UT 00:00")
-        t_in = col_z2.text_input("Hedef Tarih (t)", value="15.07.2002 UT 00:00")
+        t0_in = col_z1.number_input("Başlangıç Tarihi (t0) [Julian Günü]", value=2452399.5, format="%g", step=1.0)
+        t_in = col_z2.number_input("Hedef Tarih (t) [Julian Günü]", value=2452469.5, format="%g", step=1.0)
         
-        col_z3, col_z4, col_z5 = st.columns(3)
-        dt_in = col_z3.number_input("Zaman Farkı (Δt) [Gün]", value=70.0, format="%g")
+        col_z4, col_z5 = st.columns(2)
         M0_in = col_z4.number_input("Ortalama Anomali (M0) [°]", value=189.275, format="%g")
         n_in = col_z5.number_input("Ort. Hareket (n) [°/gün]", value=0.2148025, format="%g")
 
